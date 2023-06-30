@@ -2,15 +2,16 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:widgets_to_image/widgets_to_image.dart';
 import '../../utils/app_textstyle.dart';
 import '../../utils/theme_manager.dart';
+import 'dart:ui' as ui;
 
 class NewsDetailsScreen extends StatefulWidget {
-  String? newsImage, newsTitle, newsPublishTime, news,categoryTitle = '',subCategoryTitle = '';
+  String? newsImage, newsTitle, newsPublishTime, news/*,categoryTitle = '',subCategoryTitle = ''*/;
 
   NewsDetailsScreen({
     Key? key,
@@ -18,7 +19,7 @@ class NewsDetailsScreen extends StatefulWidget {
     this.newsTitle,
     this.newsPublishTime,
     this.news,
-    this.categoryTitle = '', this.subCategoryTitle = ''
+    // this.categoryTitle = '', this.subCategoryTitle = ''
   }) : super(key: key);
 
   @override
@@ -26,7 +27,7 @@ class NewsDetailsScreen extends StatefulWidget {
 }
 
 class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
-  WidgetsToImageController newsImageController = WidgetsToImageController();
+  GlobalKey _globalNewsShareKey =  GlobalKey();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,13 +55,16 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
             padding: EdgeInsets.only(right: Get.width * 0.035),
             child: GestureDetector(
               onTap: () async {
-                Uint8List? bytes = await newsImageController.capture();
+                RenderRepaintBoundary boundary = _globalNewsShareKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                ui.Image image = await boundary.toImage(pixelRatio: 4);
+                ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+                Uint8List pngBytes = byteData!.buffer.asUint8List();
                 final tempDir = await getTemporaryDirectory();
                 File file = await File('${tempDir.path}/image.png').create();
-                file.writeAsBytesSync(bytes!);
+                file.writeAsBytesSync(pngBytes);
                 List<String>shareImage = [];
                 shareImage.add(file.path);
-                Share.shareFiles(shareImage, text:'${widget.categoryTitle} \n ${widget.subCategoryTitle} \n ${widget.newsTitle} \n ${widget.news}');
+                Share.shareFiles(shareImage, text:'${widget.newsTitle} \n ${widget.news}');/*${widget.categoryTitle} \n ${widget.subCategoryTitle} \n */
               },
               child: const Icon(Icons.share,color: Colors.black),
             ),
@@ -72,7 +76,7 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            WidgetsToImage(controller: newsImageController,
+            RepaintBoundary(key: _globalNewsShareKey,
               child: Image.network(
                 widget.newsImage!,
                 width: Get.width,
@@ -80,32 +84,32 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                 fit: BoxFit.fill,
               ),
             ),
-            widget.categoryTitle != "" ?  Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: Get.width * 0.05,
-                vertical: Get.height * 0.02,
-              ),
-              child: Text(
-                widget.categoryTitle!,
-                style: poppinsMedium.copyWith(
-                  fontSize: Get.width * 0.045,
-                  color: ThemeManager().getBlackColor,
-                ),
-              ),
-            ) : Container(),
-            widget.subCategoryTitle != "" ? Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: Get.width * 0.05,
-                vertical: Get.height * 0.02,
-              ),
-              child: Text(
-                widget.subCategoryTitle!,
-                style: poppinsMedium.copyWith(
-                  fontSize: Get.width * 0.045,
-                  color: ThemeManager().getBlackColor,
-                ),
-              ),
-            ) : Container(),
+            // widget.categoryTitle != "" ?  Padding(
+            //   padding: EdgeInsets.symmetric(
+            //     horizontal: Get.width * 0.05,
+            //     vertical: Get.height * 0.02,
+            //   ),
+            //   child: Text(
+            //     widget.categoryTitle!,
+            //     style: poppinsMedium.copyWith(
+            //       fontSize: Get.width * 0.045,
+            //       color: ThemeManager().getBlackColor,
+            //     ),
+            //   ),
+            // ) : Container(),
+            // widget.subCategoryTitle != "" ? Padding(
+            //   padding: EdgeInsets.symmetric(
+            //     horizontal: Get.width * 0.05,
+            //     vertical: Get.height * 0.02,
+            //   ),
+            //   child: Text(
+            //     widget.subCategoryTitle!,
+            //     style: poppinsMedium.copyWith(
+            //       fontSize: Get.width * 0.045,
+            //       color: ThemeManager().getBlackColor,
+            //     ),
+            //   ),
+            // ) : Container(),
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: Get.width * 0.05,

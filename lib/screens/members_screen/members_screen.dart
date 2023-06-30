@@ -27,14 +27,29 @@ class _MembersScreenState extends State<MembersScreen> {
   List<dynamic> memberListByCity = [];
   final Preferences _preferences = Preferences();
 
+  bool noDataFound = false;
   @override
   Widget build(BuildContext context) {
     memberListByCity.clear();
-    memberController.memberList.forEach((element) {
-      if (element.cityId.contains(_preferences.getCityId())) {
-        memberListByCity.add(element);
+    print(
+        "memberController.memberList[0].data ==> ${memberController.memberList.length}");
+    memberController.memberList.forEach((memberItem) {
+      print("memberListByCity => ${memberItem.cityId}");
+      if (memberItem.cityId.contains(_preferences.getCityId())) {
+        memberListByCity.add(memberItem);
       }
     });
+    // memberListByCity.forEach((memberItem) {
+    //   for (var element in surnameController.surnameList) {
+    //     // String surName = '';
+    //     if (element.id.toString() == memberItem.surnameId) {
+    //       memberItem.surnameId = element.name;
+    //       print("memberItem.surnameId => ${memberItem.surnameId}");
+    //       break;
+    //     }
+    //   }
+    // });
+
     return Container(
       width: Get.width,
       height: Get.height,
@@ -76,16 +91,42 @@ class _MembersScreenState extends State<MembersScreen> {
                         keyboardType: TextInputType.text,
                         onChanged: (value) {
                           searchList.clear();
+                          noDataFound = false;
                           if (value.isEmpty) {
                             setState(() {});
                             return;
                           } else {
                             memberListByCity.forEach((userDetail) {
-                              if (userDetail.firstName.toString().toLowerCase().contains(value.toLowerCase()) ||
-                                  userDetail.firstName.toString().toUpperCase().contains(value.toUpperCase())) {
+                              if (userDetail.firstName
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()) ||
+                                  userDetail.phoneNo
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()) ||
+                                  userDetail.fatherHusbandName
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()) ||
+                                  userDetail.surnameGautra.name
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()) ||
+                                  userDetail.nativeCity.city
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()) ||
+                                  userDetail.companyFirmName
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase())) {
                                 searchList.add(userDetail);
                               }
                             });
+                            if(searchList.isEmpty) {
+                              noDataFound = true;
+                            }
                           }
                           setState(() {});
                         },
@@ -141,7 +182,7 @@ class _MembersScreenState extends State<MembersScreen> {
                     ),
                   ),
                   Expanded(
-                    child: ListView.separated(
+                    child: noDataFound == true ? const Text("No data found") : ListView.separated(
                         itemCount: searchList.isNotEmpty
                             ? searchList.length
                             : memberListByCity.length,
@@ -156,21 +197,24 @@ class _MembersScreenState extends State<MembersScreen> {
                           var member = searchList.isNotEmpty
                               ? searchList[index]
                               : memberListByCity[index];
-                          String surName = "";
-                          String nativeCity = "";
+                          // String surName = "";
+                          // String nativeCity = "";
 
-                          for (var element in surnameController.surnameList) {
-                            if (element.id.toString() == member.surnameId) {
-                              surName = element.name;
-                              break;
-                            }
-                          }
-                          for (var element in cityController.cityList) {
-                            if (element.id.toString() == member.nativeCityId) {
-                              nativeCity = element.name;
-                              break;
-                            }
-                          }
+                          // print("city ====> ${member.nativeCity.city}");
+                          print(
+                              "surnameGautra ====> ${member.surnameGautra.name}");
+                          // for (var element in surnameController.surnameList) {
+                          //   if (element.id.toString() == member.surnameId) {
+                          //     surName = element.name;
+                          //     break;
+                          //   }
+                          // }
+                          // for (var element in cityController.cityList) {
+                          //   if (element.id.toString() == member.nativeCity.city) {
+                          //     nativeCity = element.name;
+                          //     break;
+                          //   }
+                          // }
                           return GestureDetector(
                             onTap: () {
                               Get.to(() => MemberInfoScreen(member));
@@ -199,14 +243,15 @@ class _MembersScreenState extends State<MembersScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "${member.firstName} ${member.fatherHusbandName} $surName",
+                                          "${member.firstName} ${member.fatherHusbandName} ${member.surnameGautra.name}",
                                           style: poppinsMedium.copyWith(
                                             fontSize: Get.width * 0.035,
                                             color: ThemeManager().getBlackColor,
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 2.0),
                                           child: Text(
                                             member.phoneNo,
                                             style: poppinsMedium.copyWith(
@@ -217,9 +262,12 @@ class _MembersScreenState extends State<MembersScreen> {
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 2.0),
                                           child: Text(
-                                            nativeCity,
+                                            member.nativeCity != null
+                                                ? member.nativeCity.city
+                                                : "",
                                             style: poppinsSemiBold.copyWith(
                                               fontSize: Get.width * 0.03,
                                               color: ThemeManager()

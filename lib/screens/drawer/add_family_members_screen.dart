@@ -20,11 +20,13 @@ import '../../models/family_members_model/family_members_model.dart';
 import '../../utils/app_textstyle.dart';
 import '../../utils/theme_manager.dart';
 import '../main_screen.dart';
+import 'package:http/http.dart' as http;
 
 class AddFamilyMemberScreen extends StatefulWidget {
   FamilyMembersModel? memberList;
+  final String? pageName;
 
-  AddFamilyMemberScreen({Key? key,this.memberList}) : super(key: key);
+  AddFamilyMemberScreen({Key? key,this.memberList,this.pageName}) : super(key: key);
 
   @override
   State<AddFamilyMemberScreen> createState() => _AddFamilyMemberScreenState();
@@ -54,6 +56,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
   DateTime? expiredDate;
   TimeOfDay? birthTime;
   File? _pickedImage;
+  String? _pickedImagePath;
   final _picker = ImagePicker();
   TextEditingController panthDropDownValue = TextEditingController();
   TextEditingController relationDropDownValue = TextEditingController();
@@ -76,8 +79,15 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
             ? ImageSource.gallery
             : ImageSource.camera);
     if (pickedImage != null) {
-      setState(() {
-        _pickedImage = File(pickedImage.path);
+
+      // setState(() {
+      //   _pickedImage = File(pickedImage.path);
+      // });
+      apiServices.uploadPhoto(pickedImage: File(pickedImage.path).path).then((value) {
+        setState(() {
+          _pickedImagePath = value;
+          _pickedImage = File(pickedImage.path);
+        });
       });
     }
   }
@@ -113,19 +123,16 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
     //   statusDropDownValue = "Divorce";
     // }
     // genderDropDownValue = widget.memberList?.gender ?? "";
-    statusDropDownValue = statusList[int.parse(widget.memberList!.status!)];
 
+    statusDropDownValue = statusList[int.parse(widget.memberList!.status!) - 1];
+    print("status ==> ${statusList[int.parse(widget.memberList!.status!) - 1]}");
     for (var element in bloodGroupController.bloodGroupList) {
       if(element.id.toString() == widget.memberList!.bloodGroupId){
         bloodGroupDropDownValue = element.name;
+        bloodGroupId = element.id.toString();
         break;
       }
     }
-    // DateFormat("dd-MM-yyyy")
-        // .format(DateTime.parse(widget.userDataList!.dateOfBirth!);
-    expiredController.text = widget.memberList?.dateOfExpire ?? "";
-    // widget.memberList?.dateOfExpire != null ? expiredController.text =  DateFormat("dd-MM-yyyy")
-    //     .format(DateTime.parse(widget.memberList!.dateOfBirth!)) : expiredController.text = "";
     fullNameController.text = widget.memberList?.name ?? "";
     phoneNumberController.text = widget.memberList?.phoneNo ?? "";
     birthTimeController.text = widget.memberList?.timeOfBirth ?? "";
@@ -134,18 +141,20 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
     dobController.text = widget.memberList?.dateOfBirth ?? "";
     educationController.text = widget.memberList?.education ?? "";
     anniversaryController.text = widget.memberList?.dateOfAnniversary ?? "";
-    expiredController.text = widget.memberList?.dateOfExpire ?? "";
-    expiredController.text = widget.memberList?.dateOfExpire ?? "";
 
     for (var element in panthController.panthList) {
       if(element.id.toString() == widget.memberList!.panthId){
         panthDropDownValue.text = element.name;
+        panthId = element.id.toString();
+        break;
       }
     }
 
     for (var element in relationShipController.relationShipList) {
-      if(element.id.toString() == widget.memberList!.relationshipId){
+      print("element.id ==> ${element.id.toString()}");
+      if(element.id.toString() == widget.memberList!.relationshipId) {
         relationDropDownValue.text = element.name;
+        relationId = element.id.toString();
         break;
       }
     }
@@ -153,16 +162,13 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
   }
 @override
   void initState() {
-    // if(widget.memberList != null) {
-    //   initializeValue();
-    // }
+    if(widget.memberList != null) {
+      initializeValue();
+    }
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
-    if(widget.memberList != null) {
-      initializeValue();
-    }
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -196,8 +202,8 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
 
                     //panth
                     panthField(),
-                    //gender
 
+                    //gender
                     genderField(),
 
                     ///---------------------Status-----------------------------
@@ -219,8 +225,8 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                             annivarsaryDate = (await showDatePicker(
                               context: context,
                               initialDate: DateTime.now(),
-                              firstDate: DateTime(2023, 04),
-                              lastDate: DateTime(2100),
+                              firstDate: DateTime(1925, 04),
+                              lastDate: DateTime.now(),
                               builder: (context, child) {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
@@ -267,8 +273,8 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                             expiredDate = (await showDatePicker(
                               context: context,
                               initialDate: DateTime.now(),
-                              firstDate: DateTime(2023, 04),
-                              lastDate: DateTime(2100),
+                              firstDate: DateTime(1925, 04),
+                              lastDate: DateTime.now(),
                               builder: (context, child) {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
@@ -302,11 +308,11 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
 
                     ///---------------------BirthTime----------------
 
-                    statusDropDownValue != "Expired" || statusDropDownValue !="Married" ? birthTimeField(context) : Container(),
+                    statusDropDownValue == "Expired" || statusDropDownValue =="Married" || statusDropDownValue == null ? Container() : birthTimeField(context) ,
 
                     ///-------------------Birth Place Text field------------------------
 
-                    birthPlaceField(),
+                    statusDropDownValue == "Expired" || statusDropDownValue =="Married" || statusDropDownValue == null ? Container() : birthPlaceField(),
 
                     ///-------------------RelationShip Text field------------------------
 
@@ -426,6 +432,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
       child: CustomDropDownField(
         value: statusDropDownValue,
         validator: (value) {
+          print("statusDropDownValue =->$statusDropDownValue");
           if (value == null) {
             return "*Please select status";
           }
@@ -444,9 +451,13 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
           );
         }).toList(),
         onChanged: (value) {
+          print("value ==> $value");
+          if(widget.pageName != null){
+            allowMatrimony = true;
+          }
           statusDropDownValue = value;
-          print(statusDropDownValue);
           setState(() {});
+          print(statusDropDownValue);
         },
         labelText: "Status",
       ),
@@ -499,7 +510,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
             : CustomDropDownField2(
                 controller: panthDropDownValue,
                 validator: (value) {
-                  if (value == null) {
+                  if (value == "") {
                     return "*Please select panth";
                   }
                   return null;
@@ -578,38 +589,6 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                   });
                 },
               ),
-        /*CustomDropDownField(
-                value: panthDropDownValue,
-                validator: (value) {
-                  if (value == null) {
-                    return "Please select panth";
-                  }
-                  return null;
-                },
-                items: panthController.panthList.map((items) {
-                  return DropdownMenuItem(
-                    value: items.name,
-                    child: Text(
-                      items.name,
-                      style: poppinsRegular.copyWith(
-                        fontSize: Get.width * 0.04,
-                        color: ThemeManager().getBlackColor,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  panthDropDownValue = value;
-                  for (int i = 0; i < panthController.panthList.length; i++) {
-                    if (value == panthController.panthList[i].name) {
-                      panthId = panthController.panthList[i].id.toString();
-                      print("this is panthId =======> ${panthId}");
-                    }
-                  }
-                  setState(() {});
-                },
-                labelText: "Select your Panth",
-              ),*/
       ),
     );
   }
@@ -807,7 +786,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
               : CustomDropDownField2(
                   controller: relationDropDownValue,
                   validator: (value) {
-                    if (value == null) {
+                    if (value == "") {
                       return "*Please Select RelationShip.";
                     }
                     return null;
@@ -1017,40 +996,108 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
       margin: EdgeInsets.symmetric(vertical: Get.height * 0.035),
       child: ElevatedButton(
         onPressed: () async {
-          if (_formKey.currentState!.validate()) {
-            var dataBody = {
-              "avtar_url": _pickedImage?.path,
-              "name": fullNameController.text,
-              "phone_no": phoneNumberController.text,
-              "panth_id": panthId,
-              "gender": genderDropDownValue == "Male" ? "1" : "2",
-              //  List statusList = ["Married", "Unmarried","Expired","Divorce"];
-              "status_id": statusDropDownValue == "Married"
-                  ? "1"
-                  : statusDropDownValue == "Unmarried"
-                      ? "2"
-                      : statusDropDownValue == "Expired"
-                          ? "3"
-                          : "4",
-              "date_of_anniversary": anniversaryController.text,
-              "date_of_expire": expiredController.text,
-              "time_of_birth": "${birthTime?.hour}:${birthTime?.minute}",
-              "birth_place": birthPlaceController.text,
-              "relationship_id": relationId,
-              "about": aboutController.text,
-              "date_of_birth": dobController.text,
-              "education": educationController.text,
-              "blood_group_id": bloodGroupId,
-              "allow_matrimony": allowMatrimony == true ? "1" : "0",
+          if (_formKey.currentState!.validate() && _pickedImage != null || uploadedImage != null) {
+            var dataBody;
+            if(widget.memberList == null) {
+              dataBody = {
+                "avtar_url": _pickedImagePath ?? widget.memberList!.avtar,
+                "name": fullNameController.text,
+                "phone_no": phoneNumberController.text,
+                "panth_id": panthId,
+                "gender": genderDropDownValue == "Male" ? "1" : "2",
+                //  List statusList = ["Married", "Unmarried","Expired","Divorce"];
+                "status_id": statusDropDownValue == "Married"
+                    ? "1"
+                    : statusDropDownValue == "Unmarried"
+                    ? "2"
+                    : statusDropDownValue == "Expired"
+                    ? "3"
+                    : "4",
+                "date_of_anniversary": anniversaryController.text.isNotEmpty
+                    ? anniversaryController.text
+                    : "",
+                "date_of_expire": expiredController.text.isNotEmpty
+                    ? expiredController.text
+                    : "",
+                "time_of_birth": birthTime == null ? "" : "${birthTime
+                    ?.hour}:${birthTime?.minute}",
+                "birth_place": birthPlaceController.text.isEmpty
+                    ? ""
+                    : birthPlaceController.text,
+                "relationship_id": relationId,
+                "about": aboutController.text,
+                "date_of_birth": dobController.text,
+                "education": educationController.text,
+                "blood_group_id": bloodGroupId,
+                "allow_matrimony": allowMatrimony == true ? "1" : "0",
 
-              "naniyal_gautra_id": surNameId
-            };
+                "naniyal_gautra_id": surNameId ?? ""
+              };
+            } else {
+               dataBody = {
+                 "id": widget.memberList!.id.toString(),
+                "avtar_url": _pickedImagePath ?? widget.memberList!.avtar,
+                "name": fullNameController.text,
+                "phone_no": phoneNumberController.text,
+                "panth_id": panthId,
+                "gender": genderDropDownValue == "Male" ? "1" : "2",
+                //  List statusList = ["Married", "Unmarried","Expired","Divorce"];
+                "status_id": statusDropDownValue == "Married"
+                    ? "1"
+                    : statusDropDownValue == "Unmarried"
+                    ? "2"
+                    : statusDropDownValue == "Expired"
+                    ? "3"
+                    : "4",
+                "date_of_anniversary": anniversaryController.text.isNotEmpty
+                    ? anniversaryController.text
+                    : "",
+                "date_of_expire": expiredController.text.isNotEmpty
+                    ? expiredController.text
+                    : "",
+                "time_of_birth": birthTime == null ? "" : "${birthTime
+                    ?.hour}:${birthTime?.minute}",
+                "birth_place": birthPlaceController.text.isEmpty
+                    ? ""
+                    : birthPlaceController.text,
+                "relationship_id": relationId,
+                "about": aboutController.text,
+                "date_of_birth": dobController.text,
+                "education": educationController.text,
+                "blood_group_id": bloodGroupId,
+                "allow_matrimony": allowMatrimony == true ? "1" : "0",
+
+                "naniyal_gautra_id": surNameId ?? ""
+              };
+            }
+
             print("dataBody ==> $dataBody");
             apiServices.addFamilyOrMatrimonyData(dataBody).then((value) {
               if (value != null) {
                 Get.off(const ListFamilyMemberScreen());
               }
             });
+          } else {
+            Get.showSnackbar(
+              GetSnackBar(
+                messageText: Text(
+                  _pickedImage != null || uploadedImage != null ? "Please fill all the details." : "Please fill all the details & Image",
+                  style: poppinsRegular.copyWith(
+                    fontSize: Get.width * 0.035,
+                    color: ThemeManager().getWhiteColor,
+                  ),
+                ),
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: ThemeManager().getRedColor,
+                borderRadius: 20,
+                margin: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.05,
+                    vertical: Get.height * 0.02),
+                duration: const Duration(seconds: 3),
+                isDismissible: true,
+                forwardAnimationCurve: Curves.easeOutBack,
+              ),
+            );
           }
         },
         style: ElevatedButton.styleFrom(
@@ -1059,8 +1106,8 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
             borderRadius: BorderRadius.circular(25),
           ),
         ),
-        child: Text(
-          "Add member",
+        child: Text( widget.memberList == null ?
+          "Add member" : "Save",
           style: poppinsSemiBold.copyWith(
             fontSize: Get.width * 0.04,
             color: ThemeManager().getWhiteColor,
@@ -1083,7 +1130,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
             : CustomDropDownField2(
                 controller: surNameDropDownValue,
                 validator: (value) {
-                  if (value == null) {
+                  if (value == "") {
                     return "*Please Naniyal Gautra.";
                   }
                   return null;
@@ -1161,42 +1208,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                     print("object ==> $value");
                   });
                 },
-              ), /*CustomDropDownField(
-                value: surNameDropDownValue,
-                validator: (value) {
-                  if (value == null) {
-                    return "*Please select surname.";
-                  }
-                  return null;
-                },
-                items: surNameController.surnameList.map((items) {
-                  return DropdownMenuItem(
-                    value: items.name,
-                    child: Text(
-                      items.name,
-                      style: poppinsRegular.copyWith(
-                        fontSize: Get.width * 0.04,
-                        color: ThemeManager().getBlackColor,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  surNameDropDownValue = value;
-                  for (int i = 0;
-                      i < surNameController.surnameList.length;
-                      i++) {
-                    if (value == surNameController.surnameList[i].name) {
-                      surNameId =
-                          surNameController.surnameList[i].id.toString();
-
-                      print(surNameId);
-                    }
-                  }
-                  setState(() {});
-                },
-                labelText: "Select your Surname",
-              ),*/
+              ),
       ),
     );
   }

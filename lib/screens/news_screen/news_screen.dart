@@ -90,12 +90,13 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
     },
   ];
   String newsCategoryId = "";
+  RxList newSubcategoryList = [].obs;
 
   @override
   void initState() {
     newsController.getNews({
       "filter_from":
-          "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day - DateTime.now().weekday % 7}",
+      "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day - DateTime.now().weekday % 7}",
       "filter_to":
           "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
       "category_id": "",
@@ -106,11 +107,12 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
     NewsCategoryModel tempDataAdd = NewsCategoryModel(id: 0, name: "All");
     print(newsCategoryController.newsCategoryList[0].name);
     mainTabList.add(tempDataAdd);
+    newsCategoryController.newsCategoryList
+        .removeWhere((element) => element.name == "शोक संदेश");
+    newsCategoryController.newsCategoryList
+        .removeWhere((element) => element.name == "श्रद्धांजलि");
     mainTabList.addAll(newsCategoryController.newsCategoryList);
     _tabController = TabController(length: mainTabList.length, vsync: this);
-    subTabController = TabController(
-        length: newsSubCategoryController.newsSubCategoryList.length,
-        vsync: this);
     super.initState();
   }
 
@@ -118,18 +120,16 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
   int tabIndex = 0;
 
   String convertToAgo(String dateTime) {
-    DateTime input =
-        DateFormat('yyyy-MM-DDTHH:mm:ss.SSSSSSZ').parse(dateTime, true);
-    Duration diff = DateTime.now().difference(input);
+    Duration diff = DateTime.now().difference(DateTime.parse(dateTime));
 
     if (diff.inDays >= 1) {
-      return '${diff.inDays} day${diff.inDays == 1 ? '' : 's'} ago';
+      return "${DateTime.now().difference(DateTime.parse(dateTime)).inDays.toString()} days ago";
     } else if (diff.inHours >= 1) {
-      return '${diff.inHours} hour${diff.inHours == 1 ? '' : 's'} ago';
+      return "${DateTime.now().difference(DateTime.parse(dateTime)).inHours.toString()} hours ago";
     } else if (diff.inMinutes >= 1) {
-      return '${diff.inMinutes} minute${diff.inMinutes == 1 ? '' : 's'} ago';
+      return "${DateTime.now().difference(DateTime.parse(dateTime)).inMinutes.toString()} minutes ago";
     } else if (diff.inSeconds >= 1) {
-      return '${diff.inSeconds} second${diff.inSeconds == 1 ? '' : 's'} ago';
+      return "${DateTime.now().difference(DateTime.parse(dateTime)).inSeconds.toString()} seconds ago";
     } else {
       return 'just now';
     }
@@ -178,11 +178,31 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                         .toString(),
                     "sub_category_id": "",
                     "city_id": _preferences.getCityId()
+                  }).then((value) {
+                    for (var element in newsController.newsList) {
+                      for (int i = 0;
+                          i <
+                              newsSubCategoryController
+                                  .newsSubCategoryList.length;
+                          i++) {
+                        if (element.subCategoryId.toString() ==
+                            newsSubCategoryController.newsSubCategoryList[i].id
+                                .toString()) {
+                          if (!newSubcategoryList.contains(
+                              newsSubCategoryController
+                                  .newsSubCategoryList[i])) {
+                            newSubcategoryList.add(newsSubCategoryController
+                                .newsSubCategoryList[i]);
+                          }
+                        }
+                      }
+                    }
+                    subTabController = TabController(
+                        length: newSubcategoryList.length, vsync: this);
                   });
                 }
                 setState(() {});
               },
-
               physics: const NeverScrollableScrollPhysics(),
               controller: _tabController,
               isScrollable: true,
@@ -207,18 +227,6 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                   text: mainTabList[index].name,
                 );
               }),
-              // newsCategoryController.newsCategoryList,
-              // tabs: const [
-              //   Tab(
-              //     child: Text("All"),
-              //   ),
-              //   Tab(
-              //     child: Text("sangh samaachaar"),
-              //   ),
-              //   Tab(
-              //     child: Text("shok sandesh"),
-              //   ),
-              // ]
             ),
           ),
           Container(
@@ -227,6 +235,8 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
             width: Get.width,
             margin: EdgeInsets.symmetric(horizontal: Get.width * 0.05),
           ),
+
+          /// ======================== all news
 
           Expanded(
             child: tabIndex == 0
@@ -257,8 +267,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                 Expanded(
                                   child: ListView.separated(
                                       shrinkWrap: true,
-                                      itemCount:
-                                          newsController.newsList.length,
+                                      itemCount: newsController.newsList.length,
                                       padding: EdgeInsets.symmetric(
                                         vertical: Get.height * 0.025,
                                       ),
@@ -267,46 +276,42 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                             height: Get.height * 0.02);
                                       },
                                       itemBuilder: (context, index) {
-                                        String category = "";
-                                        String subCategory = "";
-                                        for (int j = 0;
-                                            j <
-                                                newsCategoryController
-                                                    .newsCategoryList
-                                                    .length;
-                                            j++) {
-                                          if (newsController.newsList[index]
-                                                  .categoryId
-                                                  .toString() ==
-                                              newsCategoryController
-                                                  .newsCategoryList[j].id
-                                                  .toString()) {
-                                            category =
-                                                newsCategoryController
-                                                    .newsCategoryList[j]
-                                                    .name;
-                                            break;
-                                          }
-                                        }
-                                        for (int i = 0;
-                                            i <
-                                                newsSubCategoryController
-                                                    .newsSubCategoryList
-                                                    .length;
-                                            i++) {
-                                          if (newsController.newsList[index]
-                                                  .categoryId
-                                                  .toString() ==
-                                              newsSubCategoryController
-                                                  .newsSubCategoryList[i].id
-                                                  .toString()) {
-                                            subCategory =
-                                                newsSubCategoryController
-                                                    .newsSubCategoryList[i]
-                                                    .name;
-                                            break;
-                                          }
-                                        }
+                                        // String category = "";
+                                        // String subCategory = "";
+                                        // for (int j = 0;
+                                        //     j <
+                                        //         newsCategoryController
+                                        //             .newsCategoryList.length;
+                                        //     j++) {
+                                        //   if (newsController
+                                        //           .newsList[index].categoryId
+                                        //           .toString() ==
+                                        //       newsCategoryController
+                                        //           .newsCategoryList[j].id
+                                        //           .toString()) {
+                                        //     category = newsCategoryController
+                                        //         .newsCategoryList[j].name;
+                                        //     break;
+                                        //   }
+                                        // }
+                                        // for (int i = 0;
+                                        //     i <
+                                        //         newsSubCategoryController
+                                        //             .newsSubCategoryList.length;
+                                        //     i++) {
+                                        //   if (newsController
+                                        //           .newsList[index].subCategoryId
+                                        //           .toString() ==
+                                        //       newsSubCategoryController
+                                        //           .newsSubCategoryList[i].id
+                                        //           .toString()) {
+                                        //     subCategory =
+                                        //         newsSubCategoryController
+                                        //             .newsSubCategoryList[i]
+                                        //             .name;
+                                        //     break;
+                                        //   }
+                                        // }
                                         return GestureDetector(
                                           onTap: () {
                                             Get.to(
@@ -317,76 +322,82 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                                           .bannerUrl,
                                                   newsTitle: newsController
                                                       .newsList[index].name,
-                                                  newsPublishTime:
-                                                      convertToAgo(
-                                                          newsController
-                                                              .newsList[
-                                                                  index]
-                                                              .createdAt),
+                                                  newsPublishTime: convertToAgo(
+                                                      newsController
+                                                          .newsList[index]
+                                                          .createdAt),
                                                   news: newsController
                                                       .newsList[index]
                                                       .description,
-                                                  categoryTitle: category,
+                                                  /*categoryTitle: category,
                                                   subCategoryTitle:
-                                                      subCategory),
+                                                      subCategory*/),
                                             );
                                           },
                                           child: Container(
-                                            color: ThemeManager()
-                                                .getWhiteColor,
+                                            color: ThemeManager().getWhiteColor,
                                             child: Row(
                                               children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10),
-                                                  child: Image.network(
-                                                    "$mainUrl${newsController.newsList[index].bannerUrl}",
-                                                    height: Get.width * 0.2,
-                                                    width: Get.width * 0.2,
-                                                    fit: BoxFit.fill,
-                                                  ),
-                                                ),
+                                                newsController.newsList[index]
+                                                                .bannerUrl !=
+                                                            "" ||
+                                                        newsController
+                                                                .newsList[index]
+                                                                .bannerUrl !=
+                                                            null
+                                                    ? ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        child: Image.network(
+                                                          "$mainUrl${newsController.newsList[index].bannerUrl}",
+                                                          height:
+                                                              Get.width * 0.2,
+                                                          width:
+                                                              Get.width * 0.2,
+                                                          fit: BoxFit.fill,
+                                                        ))
+                                                    : Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        height: Get.width * 0.2,
+                                                        width: Get.width * 0.2,
+                                                        child: const Icon(
+                                                            Icons.newspaper),
+                                                      ),
                                                 Container(
                                                   width: Get.width * 0.65,
                                                   margin: EdgeInsets.only(
-                                                      left:
-                                                          Get.width * 0.05),
+                                                      left: Get.width * 0.05),
                                                   child: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      Text(
-                                                        category,
-                                                        style:
-                                                            poppinsRegular
-                                                                .copyWith(
-                                                          fontSize:
-                                                              Get.width *
-                                                                  0.035,
-                                                          color: ThemeManager()
-                                                              .getBlackColor,
-                                                        ),
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
-                                                      Text(
-                                                        subCategory,
-                                                        style:
-                                                            poppinsRegular
-                                                                .copyWith(
-                                                          fontSize:
-                                                              Get.width *
-                                                                  0.035,
-                                                          color: ThemeManager()
-                                                              .getBlackColor,
-                                                        ),
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
+                                                      // Text(
+                                                      //   category,
+                                                      //   style: poppinsRegular
+                                                      //       .copyWith(
+                                                      //     fontSize:
+                                                      //         Get.width * 0.035,
+                                                      //     color: ThemeManager()
+                                                      //         .getBlackColor,
+                                                      //   ),
+                                                      //   overflow: TextOverflow
+                                                      //       .ellipsis,
+                                                      // ),
+                                                      // Text(
+                                                      //   subCategory,
+                                                      //   style: poppinsRegular
+                                                      //       .copyWith(
+                                                      //     fontSize:
+                                                      //         Get.width * 0.035,
+                                                      //     color: ThemeManager()
+                                                      //         .getBlackColor,
+                                                      //   ),
+                                                      //   overflow: TextOverflow
+                                                      //       .ellipsis,
+                                                      // ),
                                                       Text(
                                                         newsController
                                                             .newsList[index]
@@ -394,38 +405,35 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                                         style: poppinsMedium
                                                             .copyWith(
                                                           fontSize:
-                                                              Get.width *
-                                                                  0.035,
+                                                              Get.width * 0.035,
                                                           color: ThemeManager()
                                                               .getBlackColor,
                                                         ),
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                       Padding(
-                                                        padding: EdgeInsets.only(
-                                                            top:
-                                                                Get.height *
-                                                                    0.0075),
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                top:
+                                                                    Get.height *
+                                                                        0.0075),
                                                         child: Text(
                                                           convertToAgo(
                                                               newsController
                                                                   .newsList[
                                                                       index]
                                                                   .createdAt),
-                                                          style:
-                                                              poppinsRegular
-                                                                  .copyWith(
+                                                          style: poppinsRegular
+                                                              .copyWith(
                                                             fontSize:
                                                                 Get.width *
                                                                     0.035,
                                                             color: ThemeManager()
                                                                 .getLightGreyColor,
                                                           ),
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         ),
                                                       ),
                                                     ],
@@ -449,71 +457,78 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: Get.height * 0.075,
-                          width: Get.width,
-                          color: ThemeManager().getWhiteColor,
-                          child: TabBar(
-                            isScrollable: true,
-                            onTap: (index) {
-                              print("object  => $index");
-                              newsController.getNews({
-                                "filter_from":
-                                    "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day - DateTime.now().weekday % 7}",
-                                "filter_to":
-                                    "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
-                                "category_id": newsCategoryId,
-                                "sub_category_id": newsSubCategoryController
-                                    .newsSubCategoryList[index].id
-                                    .toString(),
-                                "city_id": _preferences.getCityId()
-                              });
-                              setState(() {});
-                            },
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            controller: subTabController,
-                            indicatorSize: TabBarIndicatorSize.label,
-                            indicator: UnderlineTabIndicator(
-                              borderSide: BorderSide(
-                                  width: 5.0,
-                                  color: ThemeManager().getThemeGreenColor),
-                            ),
-                            labelPadding: EdgeInsets.all(8),
-                            labelColor: ThemeManager().getBlackColor,
-                            unselectedLabelColor:
-                                ThemeManager().getBlackColor,
-                            labelStyle: poppinsSemiBold.copyWith(
-                              fontSize: Get.width * 0.038,
-                            ),
-                            unselectedLabelStyle: poppinsRegular.copyWith(
-                              fontSize: Get.width * 0.038,
-                            ),
-                            indicatorColor:
-                                ThemeManager().getThemeGreenColor,
-                            tabs: List.generate(
-                                newsSubCategoryController
-                                    .newsSubCategoryList.length, (index) {
-                              return Tab(
-                                text: newsSubCategoryController
-                                    .newsSubCategoryList[index].name,
-                              );
-                            }),
-                          ),
-                        ),
+                        newSubcategoryList.isEmpty
+                            ? const Center(
+                                child: Text("No results found.."),
+                              )
+                            : Container(
+                                height: Get.height * 0.075,
+                                width: Get.width,
+                                color: ThemeManager().getWhiteColor,
+                                child: TabBar(
+                                  isScrollable: true,
+                                  onTap: (index) {
+                                    print("object  => $index");
+                                    newsController.getNews({
+                                      "filter_from":
+                                          "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day - DateTime.now().weekday % 7}",
+                                      "filter_to":
+                                          "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
+                                      "category_id": newsCategoryId,
+                                      "sub_category_id":
+                                          newsSubCategoryController
+                                              .newsSubCategoryList[index].id
+                                              .toString(),
+                                      "city_id": _preferences.getCityId()
+                                    });
+                                    setState(() {});
+                                  },
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  controller: subTabController,
+                                  indicatorSize: TabBarIndicatorSize.label,
+                                  indicator: UnderlineTabIndicator(
+                                    borderSide: BorderSide(
+                                        width: 5.0,
+                                        color:
+                                            ThemeManager().getThemeGreenColor),
+                                  ),
+                                  labelPadding: const EdgeInsets.all(8),
+                                  labelColor: ThemeManager().getBlackColor,
+                                  unselectedLabelColor:
+                                      ThemeManager().getBlackColor,
+                                  labelStyle: poppinsSemiBold.copyWith(
+                                    fontSize: Get.width * 0.038,
+                                  ),
+                                  unselectedLabelStyle: poppinsRegular.copyWith(
+                                    fontSize: Get.width * 0.038,
+                                  ),
+                                  indicatorColor:
+                                      ThemeManager().getThemeGreenColor,
+                                  // tabs: List.generate(newsSubCategoryController.newsSubCategoryList.length, (index) {
+                                  //   return Tab(text: newsSubCategoryController.newsSubCategoryList[index].name,
+                                  //   );
+                                  // }),
+                                  tabs: List.generate(newSubcategoryList.length,
+                                      (index) {
+                                    return Tab(
+                                      text: newSubcategoryList[index].name,
+                                    );
+                                  }),
+                                ),
+                              ),
                         Obx(
-                          () => newsController.isLoading.value == true
+                          () => newSubcategoryList.isEmpty
                               ? Container(
                                   alignment: Alignment.center,
                                   child: CircularProgressIndicator(
-                                    color:
-                                        ThemeManager().getThemeGreenColor,
+                                    color: ThemeManager().getThemeGreenColor,
                                   ),
                                 )
                               : Expanded(
                                   child: ListView.separated(
                                       shrinkWrap: true,
-                                      itemCount:
-                                          newsController.newsList.length,
+                                      itemCount: newsController.newsList.length,
                                       padding: EdgeInsets.symmetric(
                                         vertical: Get.height * 0.025,
                                       ),
@@ -532,11 +547,10 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                                         .bannerUrl,
                                                 newsTitle: newsController
                                                     .newsList[index].name,
-                                                newsPublishTime:
-                                                    convertToAgo(
-                                                        newsController
-                                                            .newsList[index]
-                                                            .createdAt),
+                                                newsPublishTime: convertToAgo(
+                                                    newsController
+                                                        .newsList[index]
+                                                        .createdAt),
                                                 news: newsController
                                                     .newsList[index]
                                                     .description,
@@ -547,8 +561,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                             children: [
                                               ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                        10),
+                                                    BorderRadius.circular(10),
                                                 child: Image.network(
                                                   mainUrl +
                                                       newsController
@@ -565,18 +578,15 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                                     left: Get.width * 0.05),
                                                 child: Column(
                                                   crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .start,
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       newsController
-                                                          .newsList[index]
-                                                          .name,
+                                                          .newsList[index].name,
                                                       style: poppinsMedium
                                                           .copyWith(
                                                         fontSize:
-                                                            Get.width *
-                                                                0.035,
+                                                            Get.width * 0.035,
                                                         color: ThemeManager()
                                                             .getBlackColor,
                                                       ),
@@ -588,15 +598,12 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                                       child: Text(
                                                         convertToAgo(
                                                             newsController
-                                                                .newsList[
-                                                                    index]
+                                                                .newsList[index]
                                                                 .createdAt),
-                                                        style:
-                                                            poppinsRegular
-                                                                .copyWith(
+                                                        style: poppinsRegular
+                                                            .copyWith(
                                                           fontSize:
-                                                              Get.width *
-                                                                  0.035,
+                                                              Get.width * 0.035,
                                                           color: ThemeManager()
                                                               .getLightGreyColor,
                                                         ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,7 @@ import 'package:jym_app/controller/verification_controller/city_controller.dart'
 import 'package:jym_app/controller/verification_controller/state_controller.dart';
 import 'package:jym_app/screens/main_screen.dart';
 import 'package:jym_app/screens/onboarding_screen.dart';
+import 'package:jym_app/screens/splash_screen.dart';
 import 'package:jym_app/utils/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../common_widgets/custom_dropDownField.dart';
@@ -20,6 +22,7 @@ import '../../common_widgets/list_view_common.dart';
 import '../../controller/verification_controller/city_state_wise_controller.dart';
 import '../../controller/verification_controller/panth_controller.dart';
 import '../../controller/verification_controller/surname_controller.dart';
+import '../../models/get_user_model.dart';
 import '../../services/api_services.dart';
 import '../../utils/app_textstyle.dart';
 import '../../utils/theme_manager.dart';
@@ -59,7 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<String> stateList = ["Karnataka", "West Bengal", "Gujarat", "Punjab"];
   List<String> cityList = ["Hubali", "Kolkata", "Delhi", "Mumbai"];
   List<String> nativeList = ["Khundala", "Chroyasi", "Kandala", "Utils"];
-  List statusList = ["Married", "Unmarried", "Expired", "Divorce"];
+  List statusList = ["Married", "Unmarried", "Divorce"];
   List<dynamic> searchList = [];
   final GlobalKey<FormState> _validatorKey = GlobalKey();
   File? _pickedImage;
@@ -93,6 +96,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   String urlVtar = '';
+  EditProfileModel userInformation = EditProfileModel();
+
+  getUserInformation() async {
+    var data = await apiServices.getUserData();
+    var result = json.decode(data.body);
+    userInformation = EditProfileModel.fromJson(result);
+    print("userInformation ==> ${userInformation}");
+    setState(() {});
+  }
 
   ///____________________upload avtar____________
   Future<void> uploadAvtarApi(String image) async {
@@ -106,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final Preferences _preferences = Preferences();
 
   Future<void> sendUserData(dataBody) async {
-    var data = await apiServices.postUserData(dataBody,context);
+    var data = await apiServices.postUserData(dataBody, context);
     if (data != null) {
       Get.dialog(
           WillPopScope(
@@ -295,6 +307,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // TODO: implement initState
     super.initState();
     mobileNumberController.text = _preferences.getNumber() ?? "";
+    getUserInformation();
   }
 
   @override
@@ -322,6 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
                       ///----------------Back button-------------------
 
                       GestureDetector(
@@ -395,16 +409,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               child: _pickedImage != null
                                   ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(75),
-                                      child: Image.file(
-                                        _pickedImage!,
-                                        fit: BoxFit.fill,
-                                      ))
+                                  borderRadius: BorderRadius.circular(75),
+                                  child: Image.file(
+                                    _pickedImage!,
+                                    fit: BoxFit.fill,
+                                  ))
                                   : Icon(
-                                      Icons.person,
-                                      size: Get.width * 0.13,
-                                      color: ThemeManager().getThemeGreenColor,
-                                    ),
+                                Icons.person,
+                                size: Get.width * 0.13,
+                                color: ThemeManager().getThemeGreenColor,
+                              ),
                             ),
                             Positioned(
                                 right: 1,
@@ -416,13 +430,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           alignment: Alignment.center,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(15),
+                                            BorderRadius.circular(15),
                                           ),
                                           insetPadding: EdgeInsets.symmetric(
                                             vertical: Get.height * 0.4,
                                           ),
                                           backgroundColor:
-                                              ThemeManager().getWhiteColor,
+                                          ThemeManager().getWhiteColor,
                                           child: Container(
                                             width: Get.width * 0.5,
                                             alignment: Alignment.center,
@@ -430,9 +444,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 horizontal: Get.width * 0.15),
                                             child: Column(
                                               crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
+                                              CrossAxisAlignment.center,
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                               children: [
                                                 GestureDetector(
                                                   onTap: () {
@@ -441,8 +455,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   },
                                                   child: Row(
                                                     mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
                                                     children: [
                                                       Icon(
                                                         Icons.camera_alt,
@@ -451,7 +465,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                             .getBlackColor,
                                                       ),
                                                       Padding(
-                                                        padding: EdgeInsets.only(
+                                                        padding: EdgeInsets
+                                                            .only(
                                                             left: Get.width *
                                                                 0.035),
                                                         child: Text(
@@ -459,7 +474,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           style: poppinsRegular
                                                               .copyWith(
                                                             fontSize:
-                                                                Get.width * 0.045,
+                                                            Get.width * 0.045,
                                                             color: ThemeManager()
                                                                 .getBlackColor,
                                                           ),
@@ -478,28 +493,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                         top: Get.height * 0.02),
                                                     child: Row(
                                                       mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
                                                       children: [
                                                         Icon(
                                                           Icons.image,
-                                                          size: Get.width * 0.065,
+                                                          size: Get.width *
+                                                              0.065,
                                                           color: ThemeManager()
                                                               .getBlackColor,
                                                         ),
                                                         Padding(
                                                           padding:
-                                                              EdgeInsets.only(
-                                                                  left:
-                                                                      Get.width *
-                                                                          0.035),
+                                                          EdgeInsets.only(
+                                                              left:
+                                                              Get.width *
+                                                                  0.035),
                                                           child: Text(
                                                             "Gallery",
                                                             style: poppinsRegular
                                                                 .copyWith(
                                                               fontSize:
-                                                                  Get.width *
-                                                                      0.045,
+                                                              Get.width *
+                                                                  0.045,
                                                               color: ThemeManager()
                                                                   .getBlackColor,
                                                             ),
@@ -577,110 +593,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       Padding(
                         padding: EdgeInsets.only(top: Get.height * 0.035),
-                        child: Obx(() => surNameController.isLoading.value == true
+                        child: Obx(() =>
+                        surNameController.isLoading.value == true
                             ? Center(
-                                child: CircularProgressIndicator(
-                                  color: ThemeManager().getThemeGreenColor,
-                                ),
-                              )
+                          child: CircularProgressIndicator(
+                            color: ThemeManager().getThemeGreenColor,
+                          ),
+                        )
                             : CustomDropDownField2(
-                                controller: surNameDropDownValue,
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return "*Please select surname.";
-                                  }
-                                  return null;
-                                },
-                                labelText: "Select your Surname",
-                                dropDownOnTap: () {
-                                  searchList.clear();
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return StatefulBuilder(
-                                        builder: (context, setState1) {
-                                          return Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 20),
-                                            child: Material(
-                                              child: Column(
-                                                children: [
-                                                  TextField(
-                                                    controller:
-                                                        searchSurNameController,
-                                                    decoration:
-                                                        const InputDecoration(
-                                                      contentPadding:
-                                                          EdgeInsets.only(
-                                                              left: 8),
-                                                      hintText: "Search",
-                                                    ),
-                                                    onChanged: (value) {
-                                                      searchList.clear();
-                                                      if (value.isEmpty) {
-                                                        setState1(() {});
-                                                        return;
-                                                      }
-                                                      surNameController
-                                                          .surnameList
-                                                          .forEach((userDetail) {
-                                                        if (userDetail.name
-                                                                .toString()
-                                                                .toLowerCase()
-                                                                .startsWith(value
-                                                                    .toLowerCase()) ||
-                                                            userDetail.name
-                                                                .toString()
-                                                                .toUpperCase()
-                                                                .startsWith(value
-                                                                    .toUpperCase())) {
-                                                          print("object");
-                                                          searchList
-                                                              .add(userDetail);
-                                                        }
-                                                      });
-                                                      setState1(() {});
-                                                    },
-                                                  ),
-                                                  SizedBox(
-                                                    height: Get.height * .82,
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 8.0),
-                                                      child: ListViewCommon(
-                                                        listShow: searchList
-                                                                .isNotEmpty
-                                                            ? searchList
-                                                            : surNameController
-                                                                .surnameList,
-                                                      ),
-                                                    ),
-                                                  )
-                                                ],
+                          controller: surNameDropDownValue,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "*Please select surname.";
+                            }
+                            return null;
+                          },
+                          labelText: "Select your Surname",
+                          dropDownOnTap: () {
+                            searchList.clear();
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return StatefulBuilder(
+                                  builder: (context, setState1) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 20),
+                                      child: Material(
+                                        child: Column(
+                                          children: [
+                                            TextField(
+                                              controller:
+                                              searchSurNameController,
+                                              decoration:
+                                              const InputDecoration(
+                                                contentPadding:
+                                                EdgeInsets.only(
+                                                    left: 8),
+                                                hintText: "Search",
                                               ),
+                                              onChanged: (value) {
+                                                searchList.clear();
+                                                if (value.isEmpty) {
+                                                  setState1(() {});
+                                                  return;
+                                                }
+                                                surNameController
+                                                    .surnameList
+                                                    .forEach((userDetail) {
+                                                  if (userDetail.name
+                                                      .toString()
+                                                      .toLowerCase()
+                                                      .startsWith(value
+                                                      .toLowerCase()) ||
+                                                      userDetail.name
+                                                          .toString()
+                                                          .toUpperCase()
+                                                          .startsWith(value
+                                                          .toUpperCase())) {
+                                                    print("object");
+                                                    searchList
+                                                        .add(userDetail);
+                                                  }
+                                                });
+                                                setState1(() {});
+                                              },
                                             ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ).then((value) {
-                                    if (value != null) {
-                                      surNameDropDownValue.text =
-                                          searchList.isNotEmpty
-                                              ? searchList[value].name
-                                              : surNameController
-                                                  .surnameList[value].name;
-                                      surNameId = searchList.isNotEmpty
-                                          ? searchList[value].id.toString()
-                                          : surNameController
-                                              .surnameList[value].id
-                                              .toString();
-                                    }
-                                    print("object ==> $value");
-                                  });
-                                },
-                              )),
+                                            SizedBox(
+                                              height: Get.height * .82,
+                                              child: Padding(
+                                                padding:
+                                                const EdgeInsets.only(
+                                                    left: 8.0),
+                                                child: ListViewCommon(
+                                                  listShow: searchList
+                                                      .isNotEmpty
+                                                      ? searchList
+                                                      : surNameController
+                                                      .surnameList,
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ).then((value) {
+                              if (value != null) {
+                                surNameDropDownValue.text =
+                                searchList.isNotEmpty
+                                    ? searchList[value].name
+                                    : surNameController
+                                    .surnameList[value].name;
+                                surNameId = searchList.isNotEmpty
+                                    ? searchList[value].id.toString()
+                                    : surNameController
+                                    .surnameList[value].id
+                                    .toString();
+                              }
+                              print("object ==> $value");
+                            });
+                          },
+                        )),
                       ),
 
                       ///-------------------Panth Text field------------------------
@@ -688,109 +705,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Padding(
                         padding: EdgeInsets.only(top: Get.height * 0.035),
                         child: Obx(
-                          () => panthController.isLoading.value == true
+                              () =>
+                          panthController.isLoading.value == true
                               ? Center(
-                                  child: CircularProgressIndicator(
-                                    color: ThemeManager().getThemeGreenColor,
-                                  ),
-                                )
+                            child: CircularProgressIndicator(
+                              color: ThemeManager().getThemeGreenColor,
+                            ),
+                          )
                               : CustomDropDownField2(
-                                  controller: panthDropDownValue,
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return "*Please select panth";
-                                    }
-                                    return null;
-                                  },
-                                  labelText: "Select your Panth",
-                                  dropDownOnTap: () {
-                                    searchList.clear();
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return StatefulBuilder(
-                                          builder: (context, setState1) {
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 20),
-                                              child: Material(
-                                                child: Column(
-                                                  children: [
-                                                    TextField(
-                                                      controller:
-                                                          searchPanthController,
-                                                      decoration:
-                                                          const InputDecoration(
-                                                        contentPadding:
-                                                            EdgeInsets.only(
-                                                                left: 8),
-                                                        hintText: "Search",
-                                                      ),
-                                                      onChanged: (value) {
-                                                        searchList.clear();
-                                                        if (value.isEmpty) {
-                                                          setState1(() {});
-                                                          return;
-                                                        }
-                                                        panthController.panthList
-                                                            .forEach(
-                                                                (userDetail) {
-                                                          if (userDetail.name
-                                                                  .toString()
-                                                                  .toLowerCase()
-                                                                  .startsWith(value
-                                                                      .toLowerCase()) ||
-                                                              userDetail.name
-                                                                  .toString()
-                                                                  .toUpperCase()
-                                                                  .startsWith(value
-                                                                      .toUpperCase())) {
-                                                            print("object");
-                                                            searchList
-                                                                .add(userDetail);
-                                                          }
-                                                        });
-                                                        setState1(() {});
-                                                      },
-                                                    ),
-                                                    SizedBox(
-                                                      height: Get.height * .82,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                                left: 8.0),
-                                                        child: ListViewCommon(
-                                                          listShow: searchList
-                                                                  .isNotEmpty
-                                                              ? searchList
-                                                              : panthController
-                                                                  .panthList,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
+                            controller: panthDropDownValue,
+                            validator: (value) {
+                              if (value == null) {
+                                return "*Please select panth";
+                              }
+                              return null;
+                            },
+                            labelText: "Select your Panth",
+                            dropDownOnTap: () {
+                              searchList.clear();
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return StatefulBuilder(
+                                    builder: (context, setState1) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20),
+                                        child: Material(
+                                          child: Column(
+                                            children: [
+                                              TextField(
+                                                controller:
+                                                searchPanthController,
+                                                decoration:
+                                                const InputDecoration(
+                                                  contentPadding:
+                                                  EdgeInsets.only(
+                                                      left: 8),
+                                                  hintText: "Search",
                                                 ),
+                                                onChanged: (value) {
+                                                  searchList.clear();
+                                                  if (value.isEmpty) {
+                                                    setState1(() {});
+                                                    return;
+                                                  }
+                                                  panthController.panthList
+                                                      .forEach(
+                                                          (userDetail) {
+                                                        if (userDetail.name
+                                                            .toString()
+                                                            .toLowerCase()
+                                                            .startsWith(value
+                                                            .toLowerCase()) ||
+                                                            userDetail.name
+                                                                .toString()
+                                                                .toUpperCase()
+                                                                .startsWith(
+                                                                value
+                                                                    .toUpperCase())) {
+                                                          print("object");
+                                                          searchList
+                                                              .add(userDetail);
+                                                        }
+                                                      });
+                                                  setState1(() {});
+                                                },
                                               ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ).then((value) {
-                                      if (value != null) {
-                                        panthDropDownValue.text =
-                                            searchList.isNotEmpty
-                                                ? searchList[value].name
-                                                : panthController
-                                                    .panthList[value].name;
-                                        panthId = searchList.isNotEmpty
-                                            ? searchList[value].id.toString()
-                                            : panthController.panthList[value].id
-                                                .toString();
-                                      }
-                                      print("object ==> $value");
-                                    });
-                                  },
-                                ),
+                                              SizedBox(
+                                                height: Get.height * .82,
+                                                child: Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                      left: 8.0),
+                                                  child: ListViewCommon(
+                                                    listShow: searchList
+                                                        .isNotEmpty
+                                                        ? searchList
+                                                        : panthController
+                                                        .panthList,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ).then((value) {
+                                if (value != null) {
+                                  panthDropDownValue.text =
+                                  searchList.isNotEmpty
+                                      ? searchList[value].name
+                                      : panthController
+                                      .panthList[value].name;
+                                  panthId = searchList.isNotEmpty
+                                      ? searchList[value].id.toString()
+                                      : panthController.panthList[value].id
+                                      .toString();
+                                }
+                                print("object ==> $value");
+                              });
+                            },
+                          ),
                         ),
                       ),
 
@@ -892,7 +911,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Image.asset("assets/icon/gender_female.png"),
+                                    Image.asset(
+                                        "assets/icon/gender_female.png"),
                                     Text(
                                       "Female",
                                       style: poppinsRegular.copyWith(
@@ -969,7 +989,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
                                     colorScheme: ColorScheme.light(
-                                      primary: ThemeManager().getThemeGreenColor,
+                                      primary: ThemeManager()
+                                          .getThemeGreenColor,
                                     ),
                                   ),
                                   child: child!,
@@ -1033,111 +1054,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Padding(
                         padding: EdgeInsets.only(top: Get.height * 0.035),
                         child: Obx(
-                          () => stateController.isLoading.value == true
+                              () =>
+                          stateController.isLoading.value == true
                               ? Center(
-                                  child: CircularProgressIndicator(
-                                    color: ThemeManager().getThemeGreenColor,
-                                  ),
-                                )
+                            child: CircularProgressIndicator(
+                              color: ThemeManager().getThemeGreenColor,
+                            ),
+                          )
                               : CustomDropDownField2(
-                                  controller: stateDropDownValue,
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return "*Please select state";
-                                    }
-                                    return null;
-                                  },
-                                  labelText: "Select your State",
-                                  dropDownOnTap: () {
-                                    searchList.clear();
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return StatefulBuilder(
-                                          builder: (context, setState1) {
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 20),
-                                              child: Material(
-                                                child: Column(
-                                                  children: [
-                                                    TextField(
-                                                      controller:
-                                                          searchYouStateController,
-                                                      decoration:
-                                                          const InputDecoration(
-                                                        contentPadding:
-                                                            EdgeInsets.only(
-                                                                left: 8),
-                                                        hintText: "Search",
-                                                      ),
-                                                      onChanged: (value) {
-                                                        searchList.clear();
-                                                        if (value.isEmpty) {
-                                                          setState1(() {});
-                                                          return;
-                                                        }
-                                                        stateController.stateList
-                                                            .forEach(
-                                                                (userDetail) {
-                                                          if (userDetail.name
-                                                                  .toString()
-                                                                  .toLowerCase()
-                                                                  .startsWith(value
-                                                                      .toLowerCase()) ||
-                                                              userDetail.name
-                                                                  .toString()
-                                                                  .toUpperCase()
-                                                                  .startsWith(value
-                                                                      .toUpperCase())) {
-                                                            print("object");
-                                                            searchList
-                                                                .add(userDetail);
-                                                          }
-                                                        });
-                                                        setState1(() {});
-                                                      },
-                                                    ),
-                                                    SizedBox(
-                                                      height: Get.height * .82,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                                left: 8.0),
-                                                        child: ListViewCommon(
-                                                          listShow: searchList
-                                                                  .isNotEmpty
-                                                              ? searchList
-                                                              : stateController
-                                                                  .stateList,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
+                            controller: stateDropDownValue,
+                            validator: (value) {
+                              if (value == null) {
+                                return "*Please select state";
+                              }
+                              return null;
+                            },
+                            labelText: "Select your State",
+                            dropDownOnTap: () {
+                              searchList.clear();
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return StatefulBuilder(
+                                    builder: (context, setState1) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20),
+                                        child: Material(
+                                          child: Column(
+                                            children: [
+                                              TextField(
+                                                controller:
+                                                searchYouStateController,
+                                                decoration:
+                                                const InputDecoration(
+                                                  contentPadding:
+                                                  EdgeInsets.only(
+                                                      left: 8),
+                                                  hintText: "Search",
                                                 ),
+                                                onChanged: (value) {
+                                                  searchList.clear();
+                                                  if (value.isEmpty) {
+                                                    setState1(() {});
+                                                    return;
+                                                  }
+                                                  stateController.stateList
+                                                      .forEach(
+                                                          (userDetail) {
+                                                        if (userDetail.name
+                                                            .toString()
+                                                            .toLowerCase()
+                                                            .startsWith(value
+                                                            .toLowerCase()) ||
+                                                            userDetail.name
+                                                                .toString()
+                                                                .toUpperCase()
+                                                                .startsWith(
+                                                                value
+                                                                    .toUpperCase())) {
+                                                          print("object");
+                                                          searchList
+                                                              .add(userDetail);
+                                                        }
+                                                      });
+                                                  setState1(() {});
+                                                },
                                               ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ).then((value) {
-                                      if (value != null) {
-                                        stateDropDownValue.text =
-                                            searchList.isNotEmpty
-                                                ? searchList[value].name
-                                                : stateController
-                                                    .stateList[value].name;
-                                        stateId = searchList.isNotEmpty
-                                            ? searchList[value].id.toString()
-                                            : stateController.stateList[value].id
-                                                .toString();
-                                        cityStateWiseController
-                                            .cityStateWise(stateId!);
-                                      }
-                                      print("object ==> $value");
-                                    });
-                                  },
-                                ),
+                                              SizedBox(
+                                                height: Get.height * .82,
+                                                child: Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                      left: 8.0),
+                                                  child: ListViewCommon(
+                                                    listShow: searchList
+                                                        .isNotEmpty
+                                                        ? searchList
+                                                        : stateController
+                                                        .stateList,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ).then((value) {
+                                if (value != null) {
+                                  stateDropDownValue.text =
+                                  searchList.isNotEmpty
+                                      ? searchList[value].name
+                                      : stateController
+                                      .stateList[value].name;
+                                  stateId = searchList.isNotEmpty
+                                      ? searchList[value].id.toString()
+                                      : stateController.stateList[value].id
+                                      .toString();
+                                  cityStateWiseController
+                                      .cityStateWise(stateId!);
+                                }
+                                print("object ==> $value");
+                              });
+                            },
+                          ),
                         ),
                       ),
 
@@ -1146,116 +1169,118 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Padding(
                         padding: EdgeInsets.only(top: Get.height * 0.035),
                         child: Obx(
-                          () => cityStateWiseController.isLoading == true.obs
+                              () =>
+                          cityStateWiseController.isLoading.value == true
                               ? Center(
-                                  child: CircularProgressIndicator(
-                                    color: ThemeManager().getThemeGreenColor,
-                                  ),
-                                )
+                            child: CircularProgressIndicator(
+                              color: ThemeManager().getThemeGreenColor,
+                            ),
+                          )
                               : CustomDropDownField2(
-                                  controller: cityDropDownValue,
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return "*Please select city";
-                                    }
-                                    return null;
-                                  },
-                                  labelText: "Current City",
-                                  dropDownOnTap: () {
-                                    searchList.clear();
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return StatefulBuilder(
-                                          builder: (context, setState1) {
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 20),
-                                              child: Material(
-                                                child: Column(
-                                                  children: [
-                                                    TextField(
-                                                      controller:
-                                                          searchCurrentCityController,
-                                                      decoration:
-                                                          const InputDecoration(
-                                                        contentPadding:
-                                                            EdgeInsets.only(
-                                                                left: 8),
-                                                        hintText: "Search",
-                                                      ),
-                                                      onChanged: (value) {
-                                                        searchList.clear();
-                                                        if (value.isEmpty) {
-                                                          setState1(() {});
-                                                          return;
-                                                        }
-                                                        cityStateWiseController
-                                                            .cityStateWiseList
-                                                            .forEach(
-                                                                (userDetail) {
-                                                          if (userDetail.name
-                                                                  .toString()
-                                                                  .toLowerCase()
-                                                                  .startsWith(value
-                                                                      .toLowerCase()) ||
-                                                              userDetail.name
-                                                                  .toString()
-                                                                  .toUpperCase()
-                                                                  .startsWith(value
-                                                                      .toUpperCase())) {
-                                                            print("object");
-                                                            searchList
-                                                                .add(userDetail);
-                                                          }
-                                                        });
-                                                        setState1(() {});
-                                                      },
-                                                    ),
-                                                    SizedBox(
-                                                      height: Get.height * .82,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                                left: 8.0),
-                                                        child: ListViewCommon(
-                                                          listShow: searchList
-                                                                  .isNotEmpty
-                                                              ? searchList
-                                                              : cityStateWiseController
-                                                                  .cityStateWiseList,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
+                            controller: cityDropDownValue,
+                            validator: (value) {
+                              if (value == null) {
+                                return "*Please select city";
+                              }
+                              return null;
+                            },
+                            labelText: "Current City",
+                            dropDownOnTap: () {
+                              searchList.clear();
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return StatefulBuilder(
+                                    builder: (context, setState1) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20),
+                                        child: Material(
+                                          child: Column(
+                                            children: [
+                                              TextField(
+                                                controller:
+                                                searchCurrentCityController,
+                                                decoration:
+                                                const InputDecoration(
+                                                  contentPadding:
+                                                  EdgeInsets.only(
+                                                      left: 8),
+                                                  hintText: "Search",
                                                 ),
+                                                onChanged: (value) {
+                                                  searchList.clear();
+                                                  if (value.isEmpty) {
+                                                    setState1(() {});
+                                                    return;
+                                                  }
+                                                  cityStateWiseController
+                                                      .cityStateWiseList
+                                                      .forEach(
+                                                          (userDetail) {
+                                                        if (userDetail.name
+                                                            .toString()
+                                                            .toLowerCase()
+                                                            .startsWith(value
+                                                            .toLowerCase()) ||
+                                                            userDetail.name
+                                                                .toString()
+                                                                .toUpperCase()
+                                                                .startsWith(
+                                                                value
+                                                                    .toUpperCase())) {
+                                                          print("object");
+                                                          searchList
+                                                              .add(userDetail);
+                                                        }
+                                                      });
+                                                  setState1(() {});
+                                                },
                                               ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ).then((value) async {
-                                      if (value != null) {
-                                        cityDropDownValue.text =
-                                            searchList.isNotEmpty
-                                                ? searchList[value].name
-                                                : cityStateWiseController
-                                                    .cityStateWiseList[value]
-                                                    .name;
-                                        final SharedPreferences prefs =
-                                            await SharedPreferences.getInstance();
-                                        await prefs.setString(
-                                            "cityName", cityDropDownValue.text);
-                                        cityId = searchList.isNotEmpty
-                                            ? searchList[value].id.toString()
-                                            : cityStateWiseController
-                                                .cityStateWiseList[value].id
-                                                .toString();
-                                      }
-                                      print("object ==> $value");
-                                    });
-                                  },
-                                ),
+                                              SizedBox(
+                                                height: Get.height * .82,
+                                                child: Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                      left: 8.0),
+                                                  child: ListViewCommon(
+                                                    listShow: searchList
+                                                        .isNotEmpty
+                                                        ? searchList
+                                                        : cityStateWiseController
+                                                        .cityStateWiseList,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ).then((value) async {
+                                if (value != null) {
+                                  cityDropDownValue.text =
+                                  searchList.isNotEmpty
+                                      ? searchList[value].name
+                                      : cityStateWiseController
+                                      .cityStateWiseList[value]
+                                      .name;
+                                  final SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                                  await prefs.setString(
+                                      "cityName", cityDropDownValue.text);
+                                  cityId = searchList.isNotEmpty
+                                      ? searchList[value].id.toString()
+                                      : cityStateWiseController
+                                      .cityStateWiseList[value].id
+                                      .toString();
+                                }
+                                print("object ==> $value");
+                              });
+                            },
+                          ),
                         ),
                       ),
 
@@ -1263,147 +1288,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       Padding(
                         padding: EdgeInsets.only(top: Get.height * 0.035),
-                        child: Obx(() => cityController.isLoading == true.obs
-                                ? Center(
-                                    child: CircularProgressIndicator(
-                                      color: ThemeManager().getThemeGreenColor,
-                                    ),
-                                  )
-                                : CustomDropDownField2(
-                                    controller: nativePlaceDropDownValue,
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return "*Please select place";
-                                      }
-                                      return null;
-                                    },
-                                    labelText: "Native Place",
-                                    dropDownOnTap: () {
-                                      searchList.clear();
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return StatefulBuilder(
-                                            builder: (context, setState1) {
-                                              return Padding(
+                        child: Obx(() =>
+                        cityController.isLoading == true.obs
+                            ? Center(
+                          child: CircularProgressIndicator(
+                            color: ThemeManager().getThemeGreenColor,
+                          ),
+                        )
+                            : CustomDropDownField2(
+                          controller: nativePlaceDropDownValue,
+                          validator: (value) {
+                            if (value == null) {
+                              return "*Please select place";
+                            }
+                            return null;
+                          },
+                          labelText: "Native Place",
+                          dropDownOnTap: () {
+                            searchList.clear();
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return StatefulBuilder(
+                                  builder: (context, setState1) {
+                                    return Padding(
+                                      padding:
+                                      const EdgeInsets.symmetric(
+                                          vertical: 20),
+                                      child: Material(
+                                        child: Column(
+                                          children: [
+                                            TextField(
+                                              controller:
+                                              searchBusinessCategory,
+                                              decoration:
+                                              const InputDecoration(
+                                                contentPadding:
+                                                EdgeInsets.only(
+                                                    left: 8),
+                                                hintText: "Search",
+                                              ),
+                                              onChanged: (value) {
+                                                searchList.clear();
+                                                if (value.isEmpty) {
+                                                  setState1(() {});
+                                                  return;
+                                                }
+                                                cityController.cityList
+                                                    .forEach(
+                                                        (userDetail) {
+                                                      if (userDetail.name
+                                                          .toString()
+                                                          .toLowerCase()
+                                                          .startsWith(value
+                                                          .toLowerCase()) ||
+                                                          userDetail.name
+                                                              .toString()
+                                                              .toUpperCase()
+                                                              .startsWith(value
+                                                              .toUpperCase())) {
+                                                        print("object");
+                                                        searchList.add(
+                                                            userDetail);
+                                                      }
+                                                    });
+                                                setState1(() {});
+                                              },
+                                            ),
+                                            SizedBox(
+                                              height: Get.height * .82,
+                                              child: Padding(
                                                 padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 20),
-                                                child: Material(
-                                                  child: Column(
-                                                    children: [
-                                                      TextField(
-                                                        controller:
-                                                            searchBusinessCategory,
-                                                        decoration:
-                                                            const InputDecoration(
-                                                          contentPadding:
-                                                              EdgeInsets.only(
-                                                                  left: 8),
-                                                          hintText: "Search",
-                                                        ),
-                                                        onChanged: (value) {
-                                                          searchList.clear();
-                                                          if (value.isEmpty) {
-                                                            setState1(() {});
-                                                            return;
-                                                          }
-                                                          cityController.cityList
-                                                              .forEach(
-                                                                  (userDetail) {
-                                                            if (userDetail.name
-                                                                    .toString()
-                                                                    .toLowerCase()
-                                                                    .startsWith(value
-                                                                        .toLowerCase()) ||
-                                                                userDetail.name
-                                                                    .toString()
-                                                                    .toUpperCase()
-                                                                    .startsWith(value
-                                                                        .toUpperCase())) {
-                                                              print("object");
-                                                              searchList.add(
-                                                                  userDetail);
-                                                            }
-                                                          });
-                                                          setState1(() {});
-                                                        },
-                                                      ),
-                                                      SizedBox(
-                                                        height: Get.height * .82,
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  left: 8.0),
-                                                          child: ListViewCommon(
-                                                            listShow: searchList
-                                                                    .isNotEmpty
-                                                                ? searchList
-                                                                : cityController
-                                                                    .cityList,
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
+                                                const EdgeInsets
+                                                    .only(
+                                                    left: 8.0),
+                                                child: ListViewCommon(
+                                                  listShow: searchList
+                                                      .isNotEmpty
+                                                      ? searchList
+                                                      : cityController
+                                                      .cityList,
                                                 ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ).then((value) {
-                                        if (value != null) {
-                                          nativePlaceDropDownValue.text =
-                                              searchList.isNotEmpty
-                                                  ? searchList[value].name
-                                                  : cityController
-                                                      .cityList[value].name;
-                                          nativeId = searchList.isNotEmpty
-                                              ? searchList[value].id.toString()
-                                              : cityController.cityList[value].id
-                                                  .toString();
-                                        }
-                                        print("object ==> $value");
-                                      });
-                                    },
-                                  )
-                            /*CustomDropDownField(
-                                  value: nativePlaceDropDownValue,
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return "*Please select place";
-                                    }
-                                    return null;
-                                  },
-                                  items: cityController.cityList.map((items) {
-                                    return DropdownMenuItem(
-                                      value: items.city,
-                                      child: Text(
-                                        items.city,
-                                        style: poppinsRegular.copyWith(
-                                          fontSize: Get.width * 0.04,
-                                          color: ThemeManager().getBlackColor,
+                                              ),
+                                            )
+                                          ],
                                         ),
                                       ),
                                     );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    nativePlaceDropDownValue = value;
-                                    for (int i = 0;
-                                        i < cityController.cityList.length;
-                                        i++) {
-                                      if (cityController.cityList[i].city ==
-                                          value) {
-                                        nativeId = cityController.cityList[i].id
-                                            .toString();
-                                      }
-                                    }
-                                    setState(() {});
                                   },
-                                  labelText: "Native Place",
-                                ),*/
-                            ),
+                                );
+                              },
+                            ).then((value) {
+                              if (value != null) {
+                                nativePlaceDropDownValue.text =
+                                searchList.isNotEmpty
+                                    ? searchList[value].name
+                                    : cityController
+                                    .cityList[value].name;
+                                nativeId = searchList.isNotEmpty
+                                    ? searchList[value].id.toString()
+                                    : cityController.cityList[value].id
+                                    .toString();
+                              }
+                              print("object ==> $value");
+                            });
+                          },
+                        )
+                        ),
                       ),
 
                       ///---------------------Send for approval button-----------------------------
@@ -1414,49 +1405,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         margin: EdgeInsets.only(top: Get.height * 0.035),
                         child: ElevatedButton(
                           onPressed: () async {
-                            if (_formKey.currentState!.validate() && _pickedImage != null &&
-                            selectedGender != "") {
-                              await uploadAvtarApi(_pickedImage!.path.toString());
+                            if (_formKey.currentState!.validate() &&
+                                _pickedImage != null &&
+                                selectedGender != "") {
+                              await uploadAvtarApi(
+                                  _pickedImage!.path.toString());
 
                               FocusScope.of(context).unfocus();
-                                var dataBody = {
-                                  "avtar_url": urlVtar,
-                                  "first_name": firstNameController.text.trim(),
-                                  "father_husband_name":
-                                      fatherNameController.text.trim(),
-                                  "surname_id": surNameId,
-                                  "panth_id": panthId,
-                                  "patti_id": "0",
-                                  "phone_no": mobileNumberController.text.trim(),
-                                  "alt_phone_no": "",
-                                  "email_address": "",
-                                  "gender": selectedGender == "Male" ? "1" : "2",
-                                  "date_of_birth": dobController.text,
-                                  "blood_group_id": "",
-                                  "address": "",
-                                  "pincode": "",
-                                  "state_id": stateId,
-                                  "city_id": cityId,
-                                  "status_id": "",
-                                  "date_of_anniversary": anniController.text,
-                                  "date_of_expiry": expiryController.text,
-                                  "sasural_gautra_id": "",
-                                  "education": "",
-                                  "native_address": "",
-                                  "native_pincode": "",
-                                  "native_state_id": "",
-                                  "native_city_id": nativeId,
-                                  "business_category_id": "",
-                                  "company_firm_name": "",
-                                  "designation": "",
-                                  "business_address": "",
-                                  "business_pincode": "",
-                                  "business_state_id": "",
-                                  "business_city_id": ""
-                                };
+                              var dataBody = {
+                                "id": userInformation.id.toString(),
+                                "avtar_url": urlVtar,
+                                "first_name": firstNameController.text.trim(),
+                                "father_husband_name":
+                                fatherNameController.text.trim(),
+                                "surname_id": surNameId,
+                                "panth_id": panthId,
+                                "patti_id": "0",
+                                "phone_no": mobileNumberController.text.trim(),
+                                "alt_phone_no": "",
+                                "email_address": "",
+                                "gender": selectedGender == "Male" ? "1" : "2",
+                                "date_of_birth": dobController.text,
+                                "blood_group_id": "",
+                                "address": "",
+                                "pincode": "",
+                                "state_id": stateId,
+                                "city_id": cityId,
+                                "status_id": statusDropDownValue == "Married"
+                                    ? "1"
+                                    : statusDropDownValue == "Unmarried"
+                                    ? "2"
+                                    : "4",
+                                "date_of_anniversary": anniController.text,
+                                "date_of_expiry": expiryController.text,
+                                "sasural_gautra_id": "",
+                                "education": "",
+                                "native_address": "",
+                                "native_pincode": "",
+                                "native_state_id": "",
+                                "native_city_id": nativeId,
+                                "business_category_id": "",
+                                "company_firm_name": "",
+                                "designation": "",
+                                "business_address": "",
+                                "business_pincode": "",
+                                "business_state_id": "",
+                                "business_city_id": ""
+                              };
+                              if (kDebugMode) {
                                 print(dataBody);
+                              }
 
-                                sendUserData(dataBody);
+                              sendUserData(dataBody);
                             } else {
                               Get.showSnackbar(
                                 GetSnackBar(

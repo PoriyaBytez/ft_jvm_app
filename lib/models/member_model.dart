@@ -1,22 +1,22 @@
 // To parse this JSON data, do
 //
-//     final getMember = getMemberFromJson(jsonString);
+//     final memberDetails = memberDetailsFromJson(jsonString);
 
 import 'dart:convert';
 
-GetMember getMemberFromJson(String str) => GetMember.fromJson(json.decode(str));
-
-String getMemberToJson(GetMember data) => json.encode(data.toJson());
-
-// class GetMember {
-//   List<Datum>? data;
+// MemberDetails memberDetailsFromJson(String str) => MemberDetails.fromJson(json.decode(str));
 //
-//   GetMember({
+// String memberDetailsToJson(MemberDetails data) => json.encode(data.toJson());
+//
+// class MemberDetails {
+//   List<MemberDetails>? data;
+//
+//   MemberDetails({
 //     this.data,
 //   });
 //
-//   factory GetMember.fromJson(Map<String, dynamic> json) => GetMember(
-//     data: json["data"] == null ? [] : List<Datum>.from(json["data"]!.map((x) => Datum.fromJson(x))),
+//   factory MemberDetails.fromJson(Map<String, dynamic> json) => MemberDetails(
+//     data: json["data"] == null ? [] : List<MemberDetails>.from(json["data"]!.map((x) => MemberDetails.fromJson(x))),
 //   );
 //
 //   Map<String, dynamic> toJson() => {
@@ -24,7 +24,7 @@ String getMemberToJson(GetMember data) => json.encode(data.toJson());
 //   };
 // }
 
-class GetMember {
+class MemberDetails {
   int? id;
   String? avtarUrl;
   String? firstName;
@@ -37,39 +37,42 @@ class GetMember {
   String? phoneNo;
   dynamic altPhoneNo;
   dynamic emailId;
-  dynamic bloodGroupId;
-  dynamic address;
-  dynamic pincode;
+  String? bloodGroupId;
+  String? address;
+  String? pincode;
   String? cityId;
   String? stateId;
   String? status;
   dynamic timeOfBirth;
   dynamic birthPlace;
   String? dateOfAnniversary;
-  dynamic sasuralGautraId;
-  String? dateOfExpired;
-  dynamic education;
+  String? sasuralGautraId;
+  dynamic dateOfExpired;
+  String? education;
   dynamic nativeAddress;
   dynamic nativePincode;
-  dynamic nativeStateId;
+  String? nativeStateId;
   String? nativeCityId;
-  dynamic businessCategoryId;
-  dynamic companyFirmName;
-  dynamic businessDesignation;
-  dynamic businessAddress;
-  dynamic businessPincode;
-  dynamic businessStateId;
-  dynamic businessCityId;
+  String? businessCategoryId;
+  String? companyFirmName;
+  String? businessDesignation;
+  String? businessAddress;
+  String? businessPincode;
+  String? businessStateId;
+  String? businessCityId;
   String? systemStatus;
   dynamic comment;
   String? otp;
-  dynamic token;
+  String? token;
   String? start;
   String? end;
   String? createdAt;
   String? updatedAt;
+  List<FamilyMember>? familyMembers;
+  SurnameGautra? surnameGautra;
+  NativeCity? nativeCity;
 
-  GetMember({
+  MemberDetails({
     this.id,
     this.avtarUrl,
     this.firstName,
@@ -113,53 +116,59 @@ class GetMember {
     this.end,
     this.createdAt,
     this.updatedAt,
+    this.familyMembers,
+    this.surnameGautra,
+    this.nativeCity,
   });
 
-  GetMember.fromJson(Map<String, dynamic> json) {
-    id= json["id"];
-    avtarUrl= json["avtar_url"];
-    firstName= json["first_name"];
-    fatherHusbandName= json["father_husband_name"];
-    surnameId= json["surname_id"];
-    panthId= json["panth_id"];
-    pattiId= json["patti_id"];
-    dateOfBirth= json["date_of_birth"];
-    gender= json["gender"];
-    phoneNo= json["phone_no"];
-    altPhoneNo= json["alt_phone_no"];
-    emailId= json["email_id"];
-    bloodGroupId= json["blood_group_id"];
-    address= json["address"];
-    pincode= json["pincode"];
-    cityId= json["city_id"];
-    stateId= json["state_id"];
-    status= json["status"];
-    timeOfBirth= json["time_of_birth"];
-    birthPlace= json["birth_place"];
-    dateOfAnniversary= json["date_of_anniversary"];
-    sasuralGautraId= json["sasural_gautra_id"];
-    dateOfExpired= json["date_of_expired"];
-    education= json["education"];
-    nativeAddress= json["native_address"];
-    nativePincode= json["native_pincode"];
-    nativeStateId= json["native_state_id"];
-    nativeCityId= json["native_city_id"];
-    businessCategoryId= json["business_category_id"];
-    companyFirmName= json["company_firm_name"];
-    businessDesignation= json["business_designation"];
-    businessAddress= json["business_address"];
-    businessPincode= json["business_pincode"];
-    businessStateId= json["business_state_id"];
-    businessCityId= json["business_city_id"];
-    systemStatus= json["system_status"];
-    comment= json["comment"];
-    otp= json["otp"];
-    token= json["token"];
-    start= json["start"];
-    end= json["end"];
-    createdAt= json["created_at"];
-    updatedAt= json["updated_at"];
-  }
+  factory MemberDetails.fromJson(Map<String, dynamic> json) => MemberDetails(
+    id: json["id"],
+    avtarUrl: json["avtar_url"],
+    firstName: json["first_name"],
+    fatherHusbandName: json["father_husband_name"],
+    surnameId: json["surname_id"],
+    panthId: json["panth_id"],
+    pattiId: json["patti_id"],
+    dateOfBirth: json["date_of_birth"],
+    gender: json["gender"],
+    phoneNo: json["phone_no"],
+    altPhoneNo: json["alt_phone_no"],
+    emailId: json["email_id"],
+    bloodGroupId: json["blood_group_id"],
+    address: json["address"],
+    pincode: json["pincode"],
+    cityId: json["city_id"],
+    stateId: json["state_id"],
+    status: json["status"],
+    timeOfBirth: json["time_of_birth"],
+    birthPlace: json["birth_place"],
+    dateOfAnniversary: json["date_of_anniversary"],
+    sasuralGautraId: json["sasural_gautra_id"],
+    dateOfExpired: json["date_of_expired"],
+    education: json["education"],
+    nativeAddress: json["native_address"],
+    nativePincode: json["native_pincode"],
+    nativeStateId: json["native_state_id"],
+    nativeCityId: json["native_city_id"],
+    businessCategoryId: json["business_category_id"],
+    companyFirmName: json["company_firm_name"],
+    businessDesignation: json["business_designation"],
+    businessAddress: json["business_address"],
+    businessPincode: json["business_pincode"],
+    businessStateId: json["business_state_id"],
+    businessCityId: json["business_city_id"],
+    systemStatus: json["system_status"],
+    comment: json["comment"],
+    otp: json["otp"],
+    token: json["token"],
+    start: json["start"],
+    end: json["end"],
+    createdAt: json["created_at"],
+    updatedAt: json["updated_at"],
+    familyMembers: json["family_members"] == null ? [] : List<FamilyMember>.from(json["family_members"]!.map((x) => FamilyMember.fromJson(x))),
+    surnameGautra: json["surname_gautra"] == null ? null : SurnameGautra.fromJson(json["surname_gautra"]),
+    nativeCity: json["native_city"] == null ? null : NativeCity.fromJson(json["native_city"]),
+  );
 
   Map<String, dynamic> toJson() => {
     "id": id,
@@ -169,7 +178,7 @@ class GetMember {
     "surname_id": surnameId,
     "panth_id": panthId,
     "patti_id": pattiId,
-    "date_of_birth": "$dateOfBirth",
+    "date_of_birth": dateOfBirth,
     "gender": gender,
     "phone_no": phoneNo,
     "alt_phone_no": altPhoneNo,
@@ -203,6 +212,177 @@ class GetMember {
     "token": token,
     "start": start,
     "end": end,
+    "created_at": createdAt,
+    "updated_at": updatedAt,
+    "family_members": familyMembers == null ? [] : List<dynamic>.from(familyMembers!.map((x) => x.toJson())),
+    "surname_gautra": surnameGautra?.toJson(),
+    "native_city": nativeCity?.toJson(),
+  };
+}
+
+class FamilyMember {
+  int? id;
+  String? custId;
+  String? avtar;
+  String? name;
+  String? gender;
+  String? phoneNo;
+  String? relationshipId;
+  String? status;
+  dynamic timeOfBirth;
+  dynamic birthPlace;
+  String? dateOfAnniversary;
+  String? dateOfExpire;
+  dynamic dateOfTime;
+  dynamic dateOfPlace;
+  String? about;
+  dynamic education;
+  String? bloodGroupId;
+  String? panthId;
+  String? allowMatrimony;
+  dynamic naniyalGautraId;
+  String? dateOfBirth;
+  String? token;
+  String? createdAt;
+  String? updatedAt;
+
+  FamilyMember({
+    this.id,
+    this.custId,
+    this.avtar,
+    this.name,
+    this.gender,
+    this.phoneNo,
+    this.relationshipId,
+    this.status,
+    this.timeOfBirth,
+    this.birthPlace,
+    this.dateOfAnniversary,
+    this.dateOfExpire,
+    this.dateOfTime,
+    this.dateOfPlace,
+    this.about,
+    this.education,
+    this.bloodGroupId,
+    this.panthId,
+    this.allowMatrimony,
+    this.naniyalGautraId,
+    this.dateOfBirth,
+    this.token,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory FamilyMember.fromJson(Map<String, dynamic> json) => FamilyMember(
+    id: json["id"],
+    custId: json["cust_id"],
+    avtar: json["avtar"],
+    name: json["name"],
+    gender: json["gender"],
+    phoneNo: json["phone_no"],
+    relationshipId: json["relationship_id"],
+    status: json["status"],
+    timeOfBirth: json["time_of_birth"],
+    birthPlace: json["birth_place"],
+    dateOfAnniversary: json["date_of_anniversary"],
+    dateOfExpire: json["date_of_expire"],
+    dateOfTime: json["date_of_time"],
+    dateOfPlace: json["date_of_place"],
+    about: json["about"],
+    education: json["education"],
+    bloodGroupId: json["blood_group_id"],
+    panthId: json["panth_id"],
+    allowMatrimony: json["allow_matrimony"],
+    naniyalGautraId: json["naniyal_gautra_id"],
+    dateOfBirth: json["date_of_birth"],
+    token: json["token"],
+    createdAt: json["created_at"],
+    updatedAt: json["updated_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "cust_id": custId,
+    "avtar": avtar,
+    "name": name,
+    "gender": gender,
+    "phone_no": phoneNo,
+    "relationship_id": relationshipId,
+    "status": status,
+    "time_of_birth": timeOfBirth,
+    "birth_place": birthPlace,
+    "date_of_anniversary": dateOfAnniversary,
+    "date_of_expire": dateOfExpire,
+    "date_of_time": dateOfTime,
+    "date_of_place": dateOfPlace,
+    "about": about,
+    "education": education,
+    "blood_group_id": bloodGroupId,
+    "panth_id": panthId,
+    "allow_matrimony": allowMatrimony,
+    "naniyal_gautra_id": naniyalGautraId,
+    "date_of_birth": dateOfBirth,
+    "token": token,
+    "created_at": createdAt,
+    "updated_at": updatedAt,
+  };
+}
+
+class NativeCity {
+  int? id;
+  String? city;
+  String? stateId;
+  String? updatedAt;
+  String? createdAt;
+
+  NativeCity({
+    this.id,
+    this.city,
+    this.stateId,
+    this.updatedAt,
+    this.createdAt,
+  });
+
+  factory NativeCity.fromJson(Map<String, dynamic> json) => NativeCity(
+    id: json["id"],
+    city: json["city"],
+    stateId: json["state_id"],
+    updatedAt: json["updated_at"],
+    createdAt: json["created_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "city": city,
+    "state_id": stateId,
+    "updated_at": updatedAt,
+    "created_at": createdAt,
+  };
+}
+
+class SurnameGautra {
+  int? id;
+  String? name;
+  String? createdAt;
+  String? updatedAt;
+
+  SurnameGautra({
+    this.id,
+    this.name,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory SurnameGautra.fromJson(Map<String, dynamic> json) => SurnameGautra(
+    id: json["id"],
+    name: json["name"],
+    createdAt: json["created_at"],
+    updatedAt: json["updated_at"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
     "created_at": createdAt,
     "updated_at": updatedAt,
   };

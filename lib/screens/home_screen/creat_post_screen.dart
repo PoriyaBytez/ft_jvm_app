@@ -38,6 +38,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   Navigator.pop(context);
                   if (pickedFile != null) {
                     createPostController.mediaFiles.add(File(pickedFile.path));
+                    setState(() {
+                      postButton = true;
+                    });
                   }
                 },
                 child: const Text("Camera")),
@@ -48,6 +51,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   Navigator.pop(context);
                   if (pickedFile != null) {
                     createPostController.mediaFiles.add(File(pickedFile.path));
+                    setState(() {
+                      postButton = true;
+                    });
                   }
                 },
                 child: const Text("Gallery")),
@@ -167,36 +173,57 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               //     ? () {}
               //     : null,
               onPressed: () async {
-                File f =  File(createPostController.mediaFiles[0].path);
-                var s = f.lengthSync();
-                var fileSizeInKB = s / 1024;
-                // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-                var fileSizeInMB = fileSizeInKB / 1024;
+                if(createPostController.mediaFiles.isNotEmpty) {
+                  File f = File(createPostController.mediaFiles[0].path);
+                  var s = f.lengthSync();
+                  var fileSizeInKB = s / 1024;
+                  // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+                  var fileSizeInMB = fileSizeInKB / 1024;
 
-                if(fileSizeInMB < 5) {
+                  if (fileSizeInMB < 5) {
+                    createPostController.postData(
+                        custId: _preferences.getUid().toString(),
+                        description: createPostController.postController.text,
+                        uploadType: "1",
+                        files: createPostController.mediaFiles).then((value) {
+                      if (value == true) {
+                        Fluttertoast.showToast(
+                            msg: "Post Sent Successfully",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.black,
+                            textColor: Colors.white,
+                            fontSize: 16.0
+                        );
+                      }
+                    });
+                  } else {
+                    showDialog(context: context, builder: (context) {
+                      return const AlertDialog(title: Text("Please select image below of 5 MB"),);
+                    },);
+                    print("file can be selected");
+                  }
+                } else if(createPostController.mediaFiles.isEmpty){
                   createPostController.postData(
                       custId: _preferences.getUid().toString(),
                       description: createPostController.postController.text,
                       uploadType: "1",
-                      files: createPostController.mediaFiles).then((value) {
-                        if(value == true){
-                          Fluttertoast.showToast(
-                              msg: "Post Sent Successfully",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.black,
-                              textColor: Colors.white,
-                              fontSize: 16.0
-                          );
-                        }
+                      ).then((value) {
+                    if (value == true) {
+                      Fluttertoast.showToast(
+                          msg: "Post Sent Successfully",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.black,
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                    }
                   });
-                } else {
-                  showDialog(context: context, builder: (context) {
-                    return const AlertDialog(title: Text("Please select image below of 5 MB"),);
-                  },);
-                  print("file can be selected");
                 }
+
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: ThemeManager().getThemeGreenColor,
@@ -237,20 +264,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           if (index == 0) {
                             _pickImage().then((value) {
                               if (createPostController.mediaFiles.isEmpty) {
-                                setState(() {
-                                  postButton = true;
-                                });
+
                               }
                             });
-                          } else {
+                          } /*else {
                             _pickVideo().then((value) {
                               if (createPostController.mediaFiles.isEmpty) {
-                                setState(() {
-                                  postButton = true;
-                                });
+                                // setState(() {
+                                //   postButton = true;
+                                // });
                               }
                             });
-                          }
+                          }*/
                         },
                         child: Container(
                           height: Get.height * 0.05,
