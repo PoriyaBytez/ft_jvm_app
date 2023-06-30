@@ -13,10 +13,10 @@ class CreatePostController extends GetxController {
       "postImage": "assets/icon/photos.png",
       "postName": "Photos",
     },
-    {
-      "postImage": "assets/icon/photos.png",
-      "postName": "Video",
-    },
+    // {
+    //   "postImage": "assets/icon/photos.png",
+    //   "postName": "Video",
+    // },
   ].obs;
 
 ////==============add post==============
@@ -33,11 +33,13 @@ class CreatePostController extends GetxController {
       "upload_type": uploadType ?? "",
     });
     print("files ==> $files");
-    for (var i = 0; i < files!.length; i++) {
-      final file = await http.MultipartFile.fromPath('post_file', files[i].path);
-      request.files.add(file);
+    if(files != null) {
+      for (var i = 0; i < files.length; i++) {
+        final file = await http.MultipartFile.fromPath(
+            'post_file', files[i].path);
+        request.files.add(file);
+      }
     }
-
     final response = await request.send();
     if (response.statusCode == 200) {
 

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -16,7 +17,7 @@ import 'package:jym_app/utils/preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import 'package:widgets_to_image/widgets_to_image.dart';
+import 'dart:ui' as ui;
 import '../common_widgets/custom_textformfield.dart';
 import '../controller/home_screen_controller/advertisement_controller.dart';
 import '../controller/home_screen_controller/calendar_controller.dart';
@@ -43,7 +44,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   TextEditingController searchController = TextEditingController();
   // WidgetsToImageController to access widget
-  WidgetsToImageController controller = WidgetsToImageController();
+  final GlobalKey _globalCalenderShareKey =  GlobalKey();
   int bottomNavigationIndex = 0;
   // RxBool crossButton = false.obs;
   final Preferences _preferences = Preferences();
@@ -191,8 +192,8 @@ Future<void> dataForCalender() async {
                     physics: BouncingScrollPhysics(),
                     child: Column(
                       children: [
-                        WidgetsToImage(
-                          controller: controller,
+                        RepaintBoundary(
+                          key: _globalCalenderShareKey,
                           child: Container(color: Colors.white,
                             child: Column(children: [
                               Row(
@@ -367,7 +368,7 @@ Future<void> dataForCalender() async {
                                           },
                                         ));
                                         if (pickedDate != null) {
-                                          dateString = DateFormat('yyyy-MM-dd')
+                                          dateString = DateFormat('dd-MM-yyyy')
                                               .format(pickedDate!)
                                               .toString();
                                         }
@@ -1347,11 +1348,14 @@ Future<void> dataForCalender() async {
 
                         InkWell(onTap: () async {
                             // crossButton.value = true;
-                          Uint8List? bytes = await controller.capture();
+                          RenderRepaintBoundary boundary = _globalCalenderShareKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                          ui.Image image = await boundary.toImage(pixelRatio: 4);
+                          ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+                          Uint8List pngBytes = byteData!.buffer.asUint8List();
                           final tempDir = await getTemporaryDirectory();
                           File file = await File('${tempDir.path}/image.png').create();
-                          file.writeAsBytesSync(bytes!);
-                          List<String> shareImage = [];
+                          file.writeAsBytesSync(pngBytes);
+                          List<String>shareImage = [];
                           shareImage.add(file.path);
                           Share.shareFiles(shareImage);
                             // crossButton.value = false;

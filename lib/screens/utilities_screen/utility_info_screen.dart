@@ -83,15 +83,15 @@ class _UtilityInfoScreenState extends State<UtilityInfoScreen> {
             children: [
               widget.utilityItem.bannerUrl == null
                   ? const SizedBox()
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(80),
-                      child: Image.network(
-                        "https://jymnew.spitel.com${widget.utilityItem.bannerUrl}",
-                        height: Get.width * 0.3,
-                        width: Get.width * 0.3,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                  :
+              Center(
+                child: Image.network(
+                  "https://jymnew.spitel.com/${widget.utilityItem.bannerUrl}",
+                  height: Get.height * 0.3,
+                  width: Get.width * 0.8,
+                  fit: BoxFit.fill,
+                ),
+              ),
               Padding(
                 padding: EdgeInsets.only(top: Get.height * 0.02),
                 child: Text(
@@ -104,7 +104,7 @@ class _UtilityInfoScreenState extends State<UtilityInfoScreen> {
               Padding(
                 padding: EdgeInsets.only(top: Get.height * 0.003),
                 child: Text(
-                  "$cityName, $stateName",
+                  "$cityName, $stateName , India",
                   style: poppinsRegular.copyWith(
                       fontSize: Get.width * 0.04,
                       color: ThemeManager().getLightGreyColor),
@@ -183,79 +183,6 @@ class _UtilityInfoScreenState extends State<UtilityInfoScreen> {
                       ),
                     ],
                   )),
-              ///-----------------Pincode & Country-----------------
-
-              Container(
-                width: Get.width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: ThemeManager().getThemeGreenColor.withOpacity(0.1),
-                ),
-                margin: EdgeInsets.only(top: Get.height * 0.015),
-                padding: EdgeInsets.only(
-                  left: Get.width * 0.05,
-                  top: Get.height * 0.02,
-                  bottom: Get.height * 0.02,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: Get.width * 0.4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Pin code",
-                            style: poppinsSemiBold.copyWith(
-                              fontSize: Get.width * 0.037,
-                              color: ThemeManager().getBlackColor,
-                            ),
-                          ),
-                          Text(
-                            "123456",
-                            style: poppinsRegular.copyWith(
-                              fontSize: Get.width * 0.037,
-                              color: ThemeManager().getBlackColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: Get.height * 0.075,
-                      color: ThemeManager().getThemeGreenColor.withOpacity(0.1),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: Get.width * 0.025),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Country",
-                            style: poppinsSemiBold.copyWith(
-                              fontSize: Get.width * 0.037,
-                              color: ThemeManager().getBlackColor,
-                            ),
-                          ),
-                          SizedBox(
-                            child: Text(
-                              "India",
-                              style: poppinsRegular.copyWith(
-                                fontSize: Get.width * 0.037,
-                                color: ThemeManager().getBlackColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
               ///-----------------OfficeNumber & Mobile Number-----------------
 

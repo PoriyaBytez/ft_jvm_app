@@ -6,6 +6,7 @@ import 'package:jym_app/services/api_services.dart';
 import 'package:jym_app/utils/app_textstyle.dart';
 import 'package:jym_app/utils/theme_manager.dart';
 
+import '../main_screen.dart';
 import 'editProfile_screen.dart';
 
 class ListFamilyMemberScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _ListFamilyMemberScreenState extends State<ListFamilyMemberScreen> {
   List familyMembersList = [];
   bool isLoading = false;
   List<dynamic> searchList = [];
+
   listFamilyMemberApiCall() async {
     isLoading = true;
     familyMembersList.clear();
@@ -39,7 +41,7 @@ class _ListFamilyMemberScreenState extends State<ListFamilyMemberScreen> {
     return AppBar(
       leading: GestureDetector(
         onTap: () {
-          Get.back();
+          Get.off(const MainScreen());
         },
         child: Icon(
           Icons.arrow_back_rounded,
@@ -74,8 +76,14 @@ class _ListFamilyMemberScreenState extends State<ListFamilyMemberScreen> {
           return;
         }
         familyMembersList.forEach((userDetail) {
-          if (userDetail.name.toString().toLowerCase().startsWith(value.toLowerCase()) ||
-              userDetail.name.toString().toUpperCase().startsWith(value.toUpperCase())) {
+          if (userDetail.name
+                  .toString()
+                  .toLowerCase()
+                  .startsWith(value.toLowerCase()) ||
+              userDetail.name
+                  .toString()
+                  .toUpperCase()
+                  .startsWith(value.toUpperCase())) {
             searchList.add(userDetail);
           }
         });
@@ -155,101 +163,120 @@ class _ListFamilyMemberScreenState extends State<ListFamilyMemberScreen> {
         height: Get.height,
         color: ThemeManager().getWhiteColor,
         alignment: Alignment.center,
-        child:Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: Get.width * 0.05,
-                      top: Get.height * 0.025,
-                      right: Get.width * 0.05,
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                left: Get.width * 0.05,
+                top: Get.height * 0.025,
+                right: Get.width * 0.05,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  color: ThemeManager().getWhiteColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeManager().getBlackColor.withOpacity(0.065),
+                      offset: const Offset(2, 3),
+                      spreadRadius: 4,
+                      blurRadius: 3,
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40),
-                        color: ThemeManager().getWhiteColor,
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                ThemeManager().getBlackColor.withOpacity(0.065),
-                            offset: const Offset(2, 3),
-                            spreadRadius: 4,
-                            blurRadius: 3,
-                          ),
-                        ],
+                  ],
+                ),
+                child: buildTextFormField(),
+              ),
+            ),
+            Expanded(
+              child: isLoading == true
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: ThemeManager().getThemeGreenColor,
                       ),
-                      child: buildTextFormField(),
-                    ),
-                  ),
-                  Expanded(
-                    child:  isLoading == true
-                        ? Center(
-                          child: CircularProgressIndicator(
-                      color: ThemeManager().getThemeGreenColor,
-                    ),
+                    )
+                  : familyMembersList.isEmpty
+                      ? const Center(
+                          child: Text("No family member yet"),
                         )
-                        : familyMembersList.isEmpty
-                        ? const Center(
-                            child: Text("No family member yet"),
-                          )
-                        : ListView.separated(
-                            itemCount: searchController.text.isNotEmpty ? searchList.length : familyMembersList.length,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: Get.width * 0.05,
-                              vertical: Get.height * 0.025,
-                            ),
-                            separatorBuilder: (context, index) {
-                              return SizedBox(height: Get.height * 0.02);
-                            },
-                            itemBuilder: (context, index) {
-                              var memberList = searchController.text.isNotEmpty ? searchList[index] : familyMembersList[index];
-                              print("image url ==> ${memberList.avtar}");
-                              return GestureDetector(
-                                onTap: () {
-                                  Get.to(() => AddFamilyMemberScreen(memberList: memberList));
-                                },
-                                child: Container(
-                                  color: ThemeManager().getWhiteColor,
-                                  child: Row(
-                                    children: [
-                                      // (memberList.avtar==null)?
-                                      // const Icon(
-                                      //   Icons.account_circle,
-                                      //   size: 65,color: Colors.black,
-                                      // ) : Image.network("https://jymnew.spitel.com/${memberList.avtar}"),
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                            left: Get.width * 0.05),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
+                      : ListView.separated(
+                          itemCount: searchController.text.isNotEmpty
+                              ? searchList.length
+                              : familyMembersList.length,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                            vertical: Get.height * 0.025,
+                          ),
+                          separatorBuilder: (context, index) {
+                            return SizedBox(height: Get.height * 0.02);
+                          },
+                          itemBuilder: (context, index) {
+                            var memberList = searchController.text.isNotEmpty
+                                ? searchList[index]
+                                : familyMembersList[index];
+                            print("image url ==> ${memberList.avtar}");
+                            return GestureDetector(
+                              onTap: () {
+                                Get.to(() => AddFamilyMemberScreen(
+                                    memberList: memberList));
+                              },
+                              child: Container(
+                                color: ThemeManager().getWhiteColor,
+                                child: Row(
+                                  children: [
+                                    (memberList.avtar == null)
+                                        ? const Icon(
+                                            Icons.account_circle,
+                                            size: 45,
+                                            color: Colors.black,
+                                          )
+                                        : Container(
+                                            height: Get.height * .055,
+                                            width: Get.height * .055,
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                image: DecorationImage(
+                                                    image: NetworkImage(
+                                                        "https://jymnew.spitel.com${memberList.avtar}"))),
+                                          ),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          left: Get.width * 0.05),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: Get.width * .725,
+                                            child: Text(
                                               memberList.name,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                               style: poppinsMedium.copyWith(
                                                 fontSize: Get.width * 0.035,
                                                 color: ThemeManager()
                                                     .getBlackColor,
                                               ),
                                             ),
-                                            Text(
-                                              memberList.phoneNo,
-                                              style: poppinsMedium.copyWith(
-                                                fontSize: Get.width * 0.03,
-                                                color: ThemeManager()
-                                                    .getLightGreyColor,
-                                              ),
+                                          ),
+                                          Text(
+                                            memberList.phoneNo,
+                                            style: poppinsMedium.copyWith(
+                                              fontSize: Get.width * 0.03,
+                                              color: ThemeManager()
+                                                  .getLightGreyColor,
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            }),
-                  )
-                ],
-              ),
+                              ),
+                            );
+                          }),
+            )
+          ],
+        ),
       ),
     );
   }

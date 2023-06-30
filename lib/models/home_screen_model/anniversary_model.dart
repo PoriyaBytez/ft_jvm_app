@@ -6,6 +6,7 @@ class AnniversaryModel {
   String? phoneNo;
   String? dateOfAnniversary;
   String? name;
+  String? surname;
 
   AnniversaryModel(
       {this.id,
@@ -14,7 +15,9 @@ class AnniversaryModel {
         this.gender,
         this.phoneNo,
         this.dateOfAnniversary,
-        this.name});
+        this.name,
+        this.surname
+      });
 
   AnniversaryModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -24,6 +27,7 @@ class AnniversaryModel {
     phoneNo = json['phone_no'];
     dateOfAnniversary = json['date_of_anniversary'];
     name = json['first_name'];
+    surname = json['surname'];
   }
 
   Map<String, dynamic> toJson() {
@@ -35,6 +39,7 @@ class AnniversaryModel {
     data['phone_no'] = phoneNo;
     data['date_of_anniversary'] = dateOfAnniversary;
     data['first_name'] = name;
+    data['surname'] = surname;
     return data;
   }
 }

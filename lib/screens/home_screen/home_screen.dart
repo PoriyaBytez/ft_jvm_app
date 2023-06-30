@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:intl/intl.dart';
+import 'package:jym_app/models/post_like_model.dart';
 import 'package:jym_app/screens/home_screen/creat_post_screen.dart';
 import 'package:jym_app/screens/home_screen/video_playing.dart';
 import 'package:jym_app/utils/app_colors.dart';
@@ -19,7 +20,6 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:widgets_to_image/widgets_to_image.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../controller/punya_tithi_controller.dart';
 import '../../controller/home_screen_controller/advertisement_controller.dart';
@@ -34,7 +34,6 @@ import '../../utils/theme_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:ui' as ui;
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -48,16 +47,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _sadNewsTabController;
   CarouselController buttonCarouselController = CarouselController();
   ScreenshotController screenshotController = ScreenshotController();
-  // WidgetsToImageController anniversaryImageController = WidgetsToImageController();
+
   // WidgetsToImageController birthdayImageController = WidgetsToImageController();
   // WidgetsToImageController dukhadImageController = WidgetsToImageController();
   // WidgetsToImageController punyaTithiImageController = WidgetsToImageController();
   final newsCategoryController = Get.put(NewsCategoryController());
   final newsSubCategoryController = Get.put(NewsSubCategoryController());
 
-
   Uint8List? imageBytes;
-  static final wisheskey = GlobalKey();
 
   int countYear(String dateOfBirth) {
     DateTime date1 = DateTime.now();
@@ -69,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return years;
   }
 
-  int carouselIndex = 0;
+  RxInt carouselIndex = 0.obs;
 
   int selectedFirstIndex = 0;
 
@@ -83,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final newsController = Get.put(NewsController());
   final punyaTithiController = Get.put(PunyaTithiController());
   final Preferences _preferences = Preferences();
-
 
   //
   DateTime nowDate = DateTime.now();
@@ -245,8 +241,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     height: Get.height * 0.2,
                                                     autoPlay: true,
                                                     onPageChanged: (i, value) {
-                                                      carouselIndex = i;
-                                                      setState(() {});
+                                                      carouselIndex.value = i;
+                                                      // setState(() {});
                                                     }),
                                               )
                                             : Container(),
@@ -272,7 +268,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   bottom: Get.height * 0.03,
                                                 ),
                                                 child: AnimatedSmoothIndicator(
-                                                  activeIndex: carouselIndex,
+                                                  activeIndex:
+                                                      carouselIndex.value,
                                                   count: controller
                                                       .advertisementList.length,
                                                   effect: ExpandingDotsEffect(
@@ -291,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               },
                             ),
 
-                            //post list for home page========================>
+                            ///==================post list for home page========================>
                             (controller.postByIdModel.posts?.length == 0)
                                 ? const Expanded(
                                     child: Text("No data"),
@@ -312,6 +309,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         );
                                       },
                                       itemBuilder: (context, index) {
+                                        print(
+                                            "banner ==> ${controller.postByIdModel.posts![index].avtarUrl}");
+                                        GlobalKey postKey = GlobalKey();
                                         var postItem = controller
                                             .postByIdModel.posts![index];
                                         RxString likeCount = "0".obs;
@@ -323,6 +323,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             likeCount.value = value;
                                           }
                                         });
+                                        //  PostLike postLike = apiServices.likeCountPost(postItem.id.toString());
+                                        //  likeCount.value = postLike.count.toString();
+
+                                        print(
+                                            "postItem.id.toString() = ${postItem.id.toString()}");
                                         return Container(
                                           decoration: BoxDecoration(
                                             color: ThemeManager().getWhiteColor,
@@ -459,18 +464,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ),
                                                 ),
                                               ),
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                    top: Get.height * 0.015),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  child: Image.network(
-                                                    "https://jymnew.spitel"
-                                                    ".com/${postItem.postUrl}",
-                                                    height: Get.height * 0.2,
-                                                    width: double.maxFinite,
-                                                    fit: BoxFit.fill,
+                                              RepaintBoundary(
+                                                key: postKey,
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(
+                                                      top: Get.height * 0.015),
+                                                  child: ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    child: postItem.postUrl ==
+                                                            null
+                                                        ? Container()
+                                                        : Image.network(
+                                                            "https://jymnew.spitel"
+                                                            ".com/${postItem.postUrl}",
+                                                            height: Get.height *
+                                                                0.2,
+                                                            width: double
+                                                                .maxFinite,
+                                                            fit: BoxFit.fill,
+                                                          ),
                                                   ),
                                                 ),
                                               ),
@@ -502,6 +516,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       .toString(),
                                                                   isLiked: postItem
                                                                       .likeButtonClick);
+                                                              likeCount.value =
+                                                                  (int.parse(likeCount
+                                                                              .value) +
+                                                                          1)
+                                                                      .toString();
                                                             }
                                                             setState(() {});
                                                           },
@@ -551,10 +570,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     ///---------------Share------------------
 
                                                     InkWell(
-                                                      onTap: () {
-                                                        Share.share(
-                                                            "https://jymnew.spitel"
-                                                            ".com/${controller.postByIdModel.posts?[index].postUrl}");
+                                                      onTap: () async {
+                                                        RenderRepaintBoundary
+                                                            boundary =
+                                                            postKey.currentContext!
+                                                                    .findRenderObject()
+                                                                as RenderRepaintBoundary;
+                                                        ui.Image image =
+                                                            await boundary
+                                                                .toImage(
+                                                                    pixelRatio:
+                                                                        4);
+                                                        ByteData? byteData =
+                                                            await image.toByteData(
+                                                                format: ui
+                                                                    .ImageByteFormat
+                                                                    .png);
+                                                        Uint8List pngBytes =
+                                                            byteData!.buffer
+                                                                .asUint8List();
+                                                        final tempDir =
+                                                            await getTemporaryDirectory();
+                                                        File file = await File(
+                                                                '${tempDir.path}/image.png')
+                                                            .create();
+                                                        file.writeAsBytesSync(
+                                                            pngBytes);
+                                                        List<String>
+                                                            shareImage = [];
+                                                        shareImage
+                                                            .add(file.path);
+                                                        Share.shareFiles(
+                                                            shareImage,
+                                                            text: postItem
+                                                                    .description ??
+                                                                "");
                                                       },
                                                       child: Padding(
                                                         padding:
@@ -668,7 +718,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                         ),
                         Expanded(
-                          key: wisheskey,
                           child: TabBarView(
                               controller: _wishesTabController,
                               children: [
@@ -690,10 +739,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           markerDecoration: BoxDecoration(
                                             color: ThemeManager()
                                                 .getThemeGreenColor,
-                                            shape: BoxShape.rectangle,
+                                            borderRadius:
+                                                BorderRadius.circular(7),
                                           ),
                                           selectedDecoration: BoxDecoration(
-                                            shape: BoxShape.rectangle,
+                                            // shape: BoxShape.rectangle,
                                             color: ThemeManager()
                                                 .getThemeGreenColor,
                                             borderRadius:
@@ -711,7 +761,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ),
                                           isTodayHighlighted: false,
                                           defaultDecoration: BoxDecoration(
-                                            shape: BoxShape.rectangle,
+                                            // shape: BoxShape.rectangle,
                                             color: ThemeManager().getWhiteColor,
                                             borderRadius:
                                                 BorderRadius.circular(7),
@@ -727,7 +777,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             ],
                                           ),
                                           withinRangeDecoration: BoxDecoration(
-                                            shape: BoxShape.rectangle,
+                                            // shape: BoxShape.rectangle,
                                             borderRadius:
                                                 BorderRadius.circular(7),
                                             color: ThemeManager().getWhiteColor,
@@ -801,7 +851,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         daysOfWeekVisible: false,
                                         sixWeekMonthsEnforced: true,
                                       ),
-                                      anniversaryController.isLoading == true
+                                      anniversaryController.isLoading.value ==
+                                              true
                                           ? Container(
                                               height: Get.height * 0.18,
                                               alignment: Alignment.center,
@@ -827,20 +878,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   );
                                                 },
                                                 itemBuilder: (context, index) {
-                                                  print("anniversaryController.anniversaryList[index].name =>${anniversaryController.anniversaryList[index].name}");
-                                                  GlobalKey _globalAnniversaryKey =  GlobalKey();
-                                                  int yearTithi = countYear(anniversaryController.anniversaryList[index].dateOfAnniversary);
+                                                  print(
+                                                      "anniversaryController.anniversaryList[index].name =>${anniversaryController.anniversaryList[index].name}");
+                                                  GlobalKey
+                                                      _globalAnniversaryKey =
+                                                      GlobalKey();
+                                                  int yearTithi = countYear(
+                                                      anniversaryController
+                                                          .anniversaryList[
+                                                              index]
+                                                          .dateOfAnniversary);
                                                   // int yearTithi = 12;
                                                   String extention = "";
-                                                  String temp = yearTithi.toString().substring(yearTithi.toString().length-1);
-                                                  if(temp == "1"){
+                                                  String temp = yearTithi
+                                                      .toString()
+                                                      .substring(yearTithi
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                                  if (temp == "1") {
                                                     extention = "st";
                                                   }
-                                                  if(temp == "2") {
-                                                    extention = "rd";
-                                                    print("extention ==> $temp");
+                                                  if (temp == "2") {
+                                                    extention = "nd";
+                                                    print(
+                                                        "extention ==> $temp");
                                                   }
-                                                  if(temp != "1" && temp != "2"){
+                                                  if (temp == "3") {
+                                                    extention = "rd";
+                                                  }
+                                                  if (temp != "1" &&
+                                                      temp != "2" &&
+                                                      temp != "3") {
                                                     extention = "th";
                                                   }
                                                   return Container(
@@ -874,9 +943,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               .start,
                                                       children: [
                                                         RepaintBoundary(
-                                                          key: _globalAnniversaryKey,
-                                                          child: Container(color: Colors.white,
-                                                            child: Stack(key: Key(index.toString()),
+                                                          key:
+                                                              _globalAnniversaryKey,
+                                                          child: Container(
+                                                            color: Colors.white,
+                                                            child: Stack(
+                                                              key: Key(index
+                                                                  .toString()),
                                                               children: [
                                                                 ClipRRect(
                                                                   borderRadius:
@@ -930,12 +1003,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                     ],
                                                                   ),
                                                                 ),
-                                                                yearTithi != 0 ? Positioned(bottom: Get.height * .104,left: Get.width * .54,child: Text(extention,style: GoogleFonts.poppins(
-                                                                  fontSize: 8,
-                                                                  color: ThemeManager().brownColors,
-                                                                  fontWeight:
-                                                                  FontWeight.w400,
-                                                                ),)) : Container(),
+                                                                yearTithi != 0
+                                                                    ? Positioned(
+                                                                        bottom: Get.height *
+                                                                            .104,
+                                                                        left: Get.width *
+                                                                            .54,
+                                                                        child:
+                                                                            Text(
+                                                                          extention,
+                                                                          style:
+                                                                              GoogleFonts.poppins(
+                                                                            fontSize:
+                                                                                8,
+                                                                            color:
+                                                                                ThemeManager().brownColors,
+                                                                            fontWeight:
+                                                                                FontWeight.w400,
+                                                                          ),
+                                                                        ))
+                                                                    : Container(),
                                                                 Positioned(
                                                                   left:
                                                                       Get.width *
@@ -950,15 +1037,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                     child:
                                                                         Center(
                                                                       child:
-                                                                          Text( yearTithi != 0 ?
-                                                                        "$yearTithi" : '',
+                                                                          Text(
+                                                                        yearTithi !=
+                                                                                0
+                                                                            ? "$yearTithi"
+                                                                            : '',
                                                                         style: poppinsRegular.copyWith(
                                                                             fontSize: Get.width *
                                                                                 0.03,
                                                                             color:
-                                                                            ThemeManager().brownColors,
-                                                                            fontWeight:
-                                                                                FontWeight.w700),
+                                                                                ThemeManager().brownColors,
+                                                                            fontWeight: FontWeight.w700),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -981,9 +1070,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                               16.0),
                                                                       child:
                                                                           Text(
-                                                                        anniversaryController
-                                                                            .anniversaryList[index]
-                                                                            .name,
+                                                                        "${anniversaryController.anniversaryList[index].name} ${anniversaryController.anniversaryList[index].surname}",
                                                                         style: GoogleFonts.akayaTelivigala(
                                                                             fontSize:
                                                                                 18,
@@ -1073,16 +1160,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               GestureDetector(
                                                                 onTap:
                                                                     () async {
-                                                                 RenderRepaintBoundary boundary = _globalAnniversaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                                                 ui.Image image = await boundary.toImage();
-                                                                 ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-                                                                 Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                                                 final tempDir = await getTemporaryDirectory();
-                                                                 File file = await File('${tempDir.path}/image.png').create();
-                                                                 file.writeAsBytesSync(pngBytes);
-                                                                 List<String>shareImage = [];
-                                                                 shareImage.add(file.path);
-                                                                 Share.shareFiles(shareImage);
+                                                                  RenderRepaintBoundary
+                                                                      boundary =
+                                                                      _globalAnniversaryKey
+                                                                          .currentContext!
+                                                                          .findRenderObject() as RenderRepaintBoundary;
+                                                                  ui
+                                                                          .Image
+                                                                      image =
+                                                                      await boundary.toImage(
+                                                                          pixelRatio:
+                                                                              4);
+                                                                  ByteData?
+                                                                      byteData =
+                                                                      await image.toByteData(
+                                                                          format: ui
+                                                                              .ImageByteFormat
+                                                                              .png);
+                                                                  Uint8List
+                                                                      pngBytes =
+                                                                      byteData!
+                                                                          .buffer
+                                                                          .asUint8List();
+                                                                  final tempDir =
+                                                                      await getTemporaryDirectory();
+                                                                  File file = await File(
+                                                                          '${tempDir.path}/image.png')
+                                                                      .create();
+                                                                  file.writeAsBytesSync(
+                                                                      pngBytes);
+                                                                  List<String>
+                                                                      shareImage =
+                                                                      [];
+                                                                  shareImage
+                                                                      .add(file
+                                                                          .path);
+                                                                  Share.shareFiles(
+                                                                      shareImage);
                                                                 },
                                                                 child: Row(
                                                                   mainAxisAlignment:
@@ -1140,10 +1254,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           markerDecoration: BoxDecoration(
                                             color: ThemeManager()
                                                 .getThemeGreenColor,
-                                            shape: BoxShape.rectangle,
+                                            borderRadius:
+                                                BorderRadius.circular(7),
                                           ),
                                           selectedDecoration: BoxDecoration(
-                                            shape: BoxShape.rectangle,
+                                            // shape: BoxShape.rectangle,
                                             color: ThemeManager()
                                                 .getThemeGreenColor,
                                             borderRadius:
@@ -1161,7 +1276,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ),
                                           isTodayHighlighted: false,
                                           defaultDecoration: BoxDecoration(
-                                            shape: BoxShape.rectangle,
+                                            // shape: BoxShape.rectangle,
                                             color: ThemeManager().getWhiteColor,
                                             borderRadius:
                                                 BorderRadius.circular(7),
@@ -1245,7 +1360,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         daysOfWeekVisible: false,
                                         sixWeekMonthsEnforced: true,
                                       ),
-                                      (birthDayController.isLoading == true)
+                                      (birthDayController.isLoading.value ==
+                                              true)
                                           ? Container(
                                               height: Get.height * 0.18,
                                               alignment: Alignment.center,
@@ -1271,24 +1387,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   );
                                                 },
                                                 itemBuilder: (context, index) {
-                                                  GlobalKey _globalBirthDayKey =  GlobalKey();
+                                                  GlobalKey _globalBirthDayKey =
+                                                      GlobalKey();
 
-                                                  int yearBirthDay = countYear(birthDayController.birthDayList[index].dateOfBirth);
+                                                  int yearBirthDay = countYear(
+                                                      birthDayController
+                                                          .birthDayList[index]
+                                                          .dateOfBirth);
                                                   // int yearTithi = 12;
                                                   String extention = "";
-                                                  String temp = yearBirthDay.toString().substring(yearBirthDay.toString().length-1);
-                                                  if(temp == "1"){
+                                                  String temp = yearBirthDay
+                                                      .toString()
+                                                      .substring(yearBirthDay
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                                  if (temp == "1") {
                                                     extention = "st";
                                                   }
-                                                  if(temp == "2") {
+                                                  if (temp == "2") {
                                                     extention = "rd";
-                                                    print("extention ==> $temp");
+                                                    print(
+                                                        "extention ==> $temp");
                                                   }
-                                                  if(temp != "1" && temp != "2"){
+                                                  if (temp == "3") {
+                                                    extention = "rd";
+                                                  }
+                                                  if (temp != "1" &&
+                                                      temp != "2" &&
+                                                      temp != "3") {
                                                     extention = "th";
                                                   }
-                                                  print(
-                                                      "birthDayController.birthDayList.length ==> ${birthDayController.birthDayList.length}");
                                                   return Container(
                                                     decoration: BoxDecoration(
                                                       color: ThemeManager()
@@ -1323,9 +1452,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(0),
-                                                          child: RepaintBoundary(
-                                                            key: _globalBirthDayKey,
-                                                            child: Container(color: Colors.white,
+                                                          child:
+                                                              RepaintBoundary(
+                                                            key:
+                                                                _globalBirthDayKey,
+                                                            child: Container(
+                                                              color:
+                                                                  Colors.white,
                                                               child: Stack(
                                                                 children: [
                                                                   Image.asset(
@@ -1333,39 +1466,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                         .birthday,
                                                                   ),
                                                                   Positioned(
-                                                                    right:
-                                                                        Get.width *
-                                                                            0.135,
-                                                                    bottom:
-                                                                        Get.width *
-                                                                            0.088,
-                                                                    child: SizedBox(
-                                                                      height:
-                                                                          Get.height *
-                                                                              0.11,
-                                                                      width:
-                                                                          Get.width *
-                                                                              0.23,
+                                                                    right: Get
+                                                                            .width *
+                                                                        0.135,
+                                                                    bottom: Get
+                                                                            .width *
+                                                                        0.088,
+                                                                    child:
+                                                                        SizedBox(
+                                                                      height: Get
+                                                                              .height *
+                                                                          0.11,
+                                                                      width: Get
+                                                                              .width *
+                                                                          0.23,
                                                                       child: Image
                                                                           .network(
                                                                         mainUrl +
-                                                                            birthDayController
-                                                                                .birthDayList[index]
-                                                                                .avtar,
+                                                                            birthDayController.birthDayList[index].avtar,
                                                                         fit: BoxFit
                                                                             .cover,
                                                                       ),
                                                                     ),
                                                                   ),
-                                                                  yearBirthDay != 0 ? Positioned(bottom: Get.height * .113,left: Get.width * .32,child: Text(extention,style: GoogleFonts.poppins(
-                                                                    fontSize: 8,
-                                                                    color: ThemeManager().brownColors,
-                                                                    fontWeight:
-                                                                    FontWeight.w400,
-                                                                  ),)) : Container(),
+                                                                  yearBirthDay !=
+                                                                          0
+                                                                      ? Positioned(
+                                                                          bottom: Get.height *
+                                                                              .113,
+                                                                          left: Get.width *
+                                                                              .32,
+                                                                          child:
+                                                                              Text(
+                                                                            extention,
+                                                                            style:
+                                                                                GoogleFonts.poppins(
+                                                                              fontSize: 8,
+                                                                              color: ThemeManager().brownColors,
+                                                                              fontWeight: FontWeight.w400,
+                                                                            ),
+                                                                          ))
+                                                                      : Container(),
                                                                   Positioned(
-                                                                    left: Get.width * .285,
-                                                                    bottom: Get.height * .11,
+                                                                    left:
+                                                                        Get.width *
+                                                                            .285,
+                                                                    bottom:
+                                                                        Get.height *
+                                                                            .11,
                                                                     child:
                                                                         Container(
                                                                       height: 9,
@@ -1376,39 +1524,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       //     borderRadius:
                                                                       //         BorderRadius.circular(
                                                                       //             4.5)),
-                                                                      child: Center(
-                                                                        child: Text( yearBirthDay != 0 ?
-                                                                          "$yearBirthDay" : "",
+                                                                      child:
+                                                                          Center(
+                                                                        child:
+                                                                            Text(
+                                                                          yearBirthDay != 0
+                                                                              ? "$yearBirthDay"
+                                                                              : "",
                                                                           style: poppinsRegular.copyWith(
                                                                               fontSize: 8,
-                                                                              color:
-                                                                              redColor,
-                                                                              fontWeight:
-                                                                                  FontWeight.w700),
+                                                                              color: redColor,
+                                                                              fontWeight: FontWeight.w700),
                                                                         ),
                                                                       ),
                                                                     ),
                                                                   ),
                                                                   Positioned(
-                                                                    bottom:
-                                                                        Get.width *
-                                                                            0.015,
+                                                                    bottom: Get
+                                                                            .width *
+                                                                        0.015,
                                                                     left: 5,
-                                                                    child: SizedBox(
-                                                                      height:
-                                                                          Get.height *
-                                                                              0.063,
-                                                                      width:
-                                                                          Get.width *
-                                                                              0.44,
-                                                                      child: Text(
-                                                                        birthDayController
-                                                                            .birthDayList[
-                                                                                index]
-                                                                            .name,
+                                                                    child:
+                                                                        SizedBox(
+                                                                      height: Get
+                                                                              .height *
+                                                                          0.063,
+                                                                      width: Get
+                                                                              .width *
+                                                                          0.44,
+                                                                      child:
+                                                                          Text(
+                                                                        "${birthDayController.birthDayList[index].name} ${birthDayController.birthDayList[index].surname ?? ""}",
                                                                         style: GoogleFonts.akayaTelivigala(
-                                                                            fontSize: 14,
-                                                                            color: ThemeManager().brownColors),
+                                                                            fontSize:
+                                                                                14,
+                                                                            color:
+                                                                                ThemeManager().brownColors),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1491,23 +1642,51 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               ///---------------Share------------------
 
                                                               GestureDetector(
-                                                                onTap: () async {
+                                                                onTap:
+                                                                    () async {
                                                                   // Uint8List?bytes = await birthdayImageController.capture();
                                                                   // final tempDir = await getTemporaryDirectory();
                                                                   // File file = await File('${tempDir.path}/image.png').create();
                                                                   // file.writeAsBytesSync(bytes!);
                                                                   // List<String>shareImage = [];
                                                                   // shareImage.add(file.path);
-                                                                  RenderRepaintBoundary boundary = _globalBirthDayKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                                                  ui.Image image = await boundary.toImage();
-                                                                  ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-                                                                  Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                                                  final tempDir = await getTemporaryDirectory();
-                                                                  File file = await File('${tempDir.path}/image.png').create();
-                                                                  file.writeAsBytesSync(pngBytes);
-                                                                  List<String>shareImage = [];
-                                                                  shareImage.add(file.path);
-                                                                  Share.shareFiles(shareImage);
+                                                                  RenderRepaintBoundary
+                                                                      boundary =
+                                                                      _globalBirthDayKey
+                                                                          .currentContext!
+                                                                          .findRenderObject() as RenderRepaintBoundary;
+                                                                  ui
+                                                                          .Image
+                                                                      image =
+                                                                      await boundary.toImage(
+                                                                          pixelRatio:
+                                                                              4);
+                                                                  ByteData?
+                                                                      byteData =
+                                                                      await image.toByteData(
+                                                                          format: ui
+                                                                              .ImageByteFormat
+                                                                              .png);
+                                                                  Uint8List
+                                                                      pngBytes =
+                                                                      byteData!
+                                                                          .buffer
+                                                                          .asUint8List();
+                                                                  final tempDir =
+                                                                      await getTemporaryDirectory();
+                                                                  File file = await File(
+                                                                          '${tempDir.path}/image.png')
+                                                                      .create();
+                                                                  file.writeAsBytesSync(
+                                                                      pngBytes);
+                                                                  List<String>
+                                                                      shareImage =
+                                                                      [];
+                                                                  shareImage
+                                                                      .add(file
+                                                                          .path);
+                                                                  Share.shareFiles(
+                                                                      shareImage);
                                                                 },
                                                                 child: Row(
                                                                   mainAxisAlignment:
@@ -1596,13 +1775,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 newsController.getNews(dukhadSamacharBody);
                               } else {
                                 var punayTithiBody = {
-                                   "date" :"${selectedDukhadSamacharDay.month}-${selectedDukhadSamacharDay.day}",
+                                  "date":
+                                      "${selectedDukhadSamacharDay.month}-${selectedDukhadSamacharDay.day}",
                                   "city_id": _preferences.getCityId()
                                 };
-                                punyaTithiController.getPunyatithi(punayTithiBody);
+                                punyaTithiController
+                                    .getPunyatithi(punayTithiBody);
                                 // newsController.getNews(punayTithiBody);
                               }
-
                             },
                             controller: _sadNewsTabController,
                             indicator: BoxDecoration(
@@ -1628,7 +1808,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ],
                           ),
                         ),
-                        Expanded(key: UniqueKey(),
+                        Expanded(
+                          key: UniqueKey(),
                           child: TabBarView(
                               controller: _sadNewsTabController,
                               children: [
@@ -1652,7 +1833,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           shape: BoxShape.rectangle,
                                         ),
                                         selectedDecoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
+                                          // shape: BoxShape.rectangle,
                                           color:
                                               ThemeManager().getThemeGreenColor,
                                           borderRadius:
@@ -1670,7 +1851,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ),
                                         isTodayHighlighted: false,
                                         defaultDecoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
+                                          // shape: BoxShape.rectangle,
                                           color: ThemeManager().getWhiteColor,
                                           borderRadius:
                                               BorderRadius.circular(7),
@@ -1717,7 +1898,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         };
                                         newsController
                                             .getNews(dukhadSamacharBody);
-                                        print("dukhadSamacharBody ==> ${dukhadSamacharBody}");
+                                        print(
+                                            "dukhadSamacharBody ==> ${dukhadSamacharBody}");
                                       },
                                       availableGestures:
                                           AvailableGestures.horizontalSwipe,
@@ -1755,243 +1937,280 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       sixWeekMonthsEnforced: true,
                                     ),
                                     Expanded(
-                                      child:
-                                          Obx(
-                                              () =>
-                                                  newsController.isLoading
-                                                              .value ==
-                                                          true
-                                                      ? Container(
-                                                          alignment:
-                                                              Alignment.center,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            color: ThemeManager()
-                                                                .getThemeGreenColor,
-                                                          ),
-                                                        )
-                                                      : ListView.separated(
-                                                          physics:
-                                                              const BouncingScrollPhysics(),
-                                                          itemCount:
-                                                              newsController
-                                                                  .newsList
-                                                                  .length,
-                                                          shrinkWrap: true,
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      Get.width *
-                                                                          0.05,
-                                                                  vertical:
-                                                                      Get.height *
-                                                                          0.015),
-                                                          separatorBuilder:
-                                                              (context, index) {
-                                                            return SizedBox(
-                                                              height:
-                                                                  Get.height *
-                                                                      0.02,
-                                                            );
-                                                          },
-                                                          itemBuilder:
-                                                              (context, index) {
-                                                                GlobalKey _globalDukhadKey =  GlobalKey();
+                                      child: Obx(() =>
+                                          newsController.isLoading.value == true
+                                              ? Container(
+                                                  alignment: Alignment.center,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: ThemeManager()
+                                                        .getThemeGreenColor,
+                                                  ),
+                                                )
+                                              : ListView.separated(
+                                                  physics:
+                                                      const BouncingScrollPhysics(),
+                                                  itemCount: newsController
+                                                      .newsList.length,
+                                                  shrinkWrap: true,
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal:
+                                                          Get.width * 0.05,
+                                                      vertical:
+                                                          Get.height * 0.015),
+                                                  separatorBuilder:
+                                                      (context, index) {
+                                                    return SizedBox(
+                                                      height: Get.height * 0.02,
+                                                    );
+                                                  },
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    GlobalKey _globalDukhadKey =
+                                                        GlobalKey();
 
-                                                                String category =
-                                                                "";
-                                                            for (int i = 0;
-                                                                i <
-                                                                    newsSubCategoryController
-                                                                        .newsSubCategoryList
-                                                                        .length;
-                                                                i++) {
-                                                              if (newsController
-                                                                      .newsList[
-                                                                          index]
-                                                                      .subCategoryId
-                                                                      .toString() ==
-                                                                  newsSubCategoryController
-                                                                      .newsSubCategoryList[
-                                                                          i]
-                                                                      .id
-                                                                      .toString()) {
-                                                                category =
-                                                                    newsSubCategoryController
-                                                                        .newsSubCategoryList[i]
-                                                                        .name;
-                                                                break;
-                                                              }
-                                                            }
-                                                            return Container(
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: ThemeManager()
-                                                                    .getWhiteColor,
+                                                    String category = "";
+                                                    for (int i = 0;
+                                                        i < newsSubCategoryController.newsSubCategoryList.length; i++) {
+                                                      if (newsController.newsList[index]
+                                                              .subCategoryId
+                                                              .toString() ==
+                                                          newsSubCategoryController
+                                                              .newsSubCategoryList[
+                                                                  i]
+                                                              .id
+                                                              .toString()) {
+                                                        category =
+                                                            newsSubCategoryController
+                                                                .newsSubCategoryList[
+                                                                    i]
+                                                                .name;
+                                                        break;
+                                                      }
+                                                    }
+                                                    return Container(
+                                                      decoration: BoxDecoration(
+                                                        color: ThemeManager()
+                                                            .getWhiteColor,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: ThemeManager()
+                                                                .getBlackColor
+                                                                .withOpacity(
+                                                                    0.075),
+                                                            spreadRadius: 4,
+                                                            blurRadius: 5,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                        horizontal:
+                                                            Get.width * 0.025,
+                                                        vertical:
+                                                            Get.width * 0.025,
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          RepaintBoundary(
+                                                            key:
+                                                                _globalDukhadKey,
+                                                            child: Container(
+                                                              color:
+                                                                  Colors.white,
+                                                              child: ClipRRect(
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            10),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: ThemeManager()
-                                                                        .getBlackColor
-                                                                        .withOpacity(
-                                                                            0.075),
-                                                                    spreadRadius:
-                                                                        4,
-                                                                    blurRadius:
-                                                                        5,
-                                                                  ),
-                                                                ],
+                                                                            7),
+                                                                child: Stack(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Image.asset(
+                                                                      ImageConstant
+                                                                          .dukhadImage,
+                                                                      width: double
+                                                                          .infinity,
+                                                                      height:
+                                                                          350,
+                                                                      fit: BoxFit
+                                                                          .fill,
+                                                                    ),
+                                                                    Positioned(
+                                                                        top: 10,
+                                                                        child: Container(
+                                                                            alignment: Alignment.center,
+                                                                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+                                                                            height: 27,
+                                                                            width: Get.width * .334,
+                                                                            child: Text(
+                                                                              category,
+                                                                              style: GoogleFonts.poppins(
+                                                                                fontSize: 15,
+                                                                                color: ThemeManager().brownColors,
+                                                                                fontWeight: FontWeight.w700,
+                                                                              ),
+                                                                            ))),
+                                                                    Positioned(
+                                                                      top: Get.width *
+                                                                          .125,
+                                                                      // 40,
+                                                                      left: Get
+                                                                              .width *
+                                                                          0.301,
+                                                                      child:
+                                                                          Container(
+                                                                        decoration: BoxDecoration(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                                100),
+                                                                            image: DecorationImage(
+                                                                                alignment: Alignment.center,
+                                                                                fit: BoxFit.cover,
+                                                                                image: NetworkImage(mainUrl + newsController.newsList[index].bannerUrl))),
+                                                                        height:
+                                                                            98,
+                                                                        width:
+                                                                            88,
+                                                                      ),
+                                                                    ),
+                                                                    Column(
+                                                                      children: [
+                                                                        const SizedBox(
+                                                                          height:
+                                                                              58,
+                                                                        ),
+                                                                        Padding(
+                                                                          padding:
+                                                                              const EdgeInsets.all(8.0),
+                                                                          child:
+                                                                              Text(
+                                                                            newsController.newsList[index].name,
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                GoogleFonts.poppins(
+                                                                              fontSize: 15,
+                                                                              color: ThemeManager().brownColors,
+                                                                              fontWeight: FontWeight.w700,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        Padding(
+                                                                          padding:
+                                                                              const EdgeInsets.symmetric(horizontal: 8.0),
+                                                                          child:
+                                                                              Text(
+                                                                            newsController.newsList[index].description,
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style: GoogleFonts.poppins(
+                                                                                fontSize: 7.1,
+                                                                                color: ThemeManager().brownColors,
+                                                                                fontWeight: FontWeight.w500),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ),
                                                               ),
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                horizontal:
-                                                                    Get.width *
-                                                                        0.025,
-                                                                vertical:
-                                                                    Get.width *
-                                                                        0.025,
-                                                              ),
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
+                                                            ),
+                                                          ),
+
+                                                          ///---------------Share------------------
+                                                          Padding(
+                                                            padding: EdgeInsets.only(
+                                                                top:
+                                                                    Get.height *
+                                                                        0.015),
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () async {
+                                                                // Uint8List?bytes = await dukhadImageController.capture();
+                                                                // final tempDir = await getTemporaryDirectory();
+                                                                // File file = await File('${tempDir.path}/image.png').create();
+                                                                // file.writeAsBytesSync(bytes!);
+                                                                // List<String>shareImage = [];
+                                                                // shareImage.add(file.path);
+                                                                // Share.shareFiles(shareImage);
+                                                                RenderRepaintBoundary
+                                                                    boundary =
+                                                                    _globalDukhadKey
+                                                                            .currentContext!
+                                                                            .findRenderObject()
+                                                                        as RenderRepaintBoundary;
+                                                                ui.Image image =
+                                                                    await boundary
+                                                                        .toImage(
+                                                                            pixelRatio:
+                                                                                4);
+                                                                ByteData?
+                                                                    byteData =
+                                                                    await image.toByteData(
+                                                                        format: ui
+                                                                            .ImageByteFormat
+                                                                            .png);
+                                                                Uint8List
+                                                                    pngBytes =
+                                                                    byteData!
+                                                                        .buffer
+                                                                        .asUint8List();
+                                                                final tempDir =
+                                                                    await getTemporaryDirectory();
+                                                                File file =
+                                                                    await File(
+                                                                            '${tempDir.path}/image.png')
+                                                                        .create();
+                                                                file.writeAsBytesSync(
+                                                                    pngBytes);
+                                                                List<String>
+                                                                    shareImage =
+                                                                    [];
+                                                                shareImage.add(
+                                                                    file.path);
+                                                                Share.shareFiles(
+                                                                    shareImage);
+                                                              },
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
                                                                         .center,
                                                                 children: [
-                                                                  RepaintBoundary(key: _globalDukhadKey,
-                                                                    child: Container(color: Colors.white,
-                                                                      child: ClipRRect(
-                                                                        borderRadius:
-                                                                            BorderRadius
-                                                                                .circular(7),
-                                                                        child:
-                                                                            Stack(
-                                                                          alignment:
-                                                                              Alignment
-                                                                                  .center,
-                                                                          children: [
-                                                                            Image.asset(
-                                                                              ImageConstant.dukhadImage,
-                                                                              width: double.infinity,
-                                                                              height:
-                                                                                  350,
-                                                                              fit: BoxFit
-                                                                                  .fill,
-                                                                            ),
-                                                                            Positioned(
-                                                                                top:
-                                                                                    10,
-                                                                                child: Container(
-                                                                                    alignment: Alignment.center,
-                                                                                    decoration: BoxDecoration( borderRadius: BorderRadius.circular(8)),
-                                                                                    height: 27,
-                                                                                    width: Get.width * .334,
-                                                                                    child: Text(
-                                                                                      category,
-                                                                                      style: GoogleFonts.poppins(
-                                                                                        fontSize: 15,
-                                                                                        color: ThemeManager().brownColors,
-                                                                                        fontWeight: FontWeight.w700,
-                                                                                      ),
-                                                                                    ))),
-                                                                            Positioned(
-                                                                              top: Get.width * .125,
-                                                                                  // 40,
-                                                                              left: Get.width *
-                                                                                  0.301,
-                                                                              child:
-                                                                                  Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(100),
-                                                                                  image: DecorationImage(alignment: Alignment.center,fit: BoxFit.cover,image: NetworkImage(mainUrl + newsController.newsList[index].bannerUrl))),
-                                                                                height:
-                                                                                    98,
-                                                                                width:
-                                                                                    88,
-                                                                              ),
-                                                                            ),
-                                                                            Column(
-                                                                              children: [
-                                                                                const SizedBox(
-                                                                                  height: 58,
-                                                                                ),
-                                                                                Padding(
-                                                                                  padding: const EdgeInsets.all(8.0),
-                                                                                  child: Text(
-                                                                                    newsController.newsList[index].name,
-                                                                                    textAlign: TextAlign.center,
-                                                                                    style: GoogleFonts.poppins(
-                                                                                      fontSize: 15,
-                                                                                      color: ThemeManager().brownColors,
-                                                                                      fontWeight: FontWeight.w700,
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                                Padding(
-                                                                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                                                  child: Text(
-                                                                                    newsController.newsList[index].description,
-                                                                                    textAlign: TextAlign.center,
-                                                                                    style: GoogleFonts.poppins(fontSize: 7.1, color: ThemeManager().brownColors,fontWeight: FontWeight.w500),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ],
-                                                                        ),
+                                                                  Image.asset(
+                                                                      "assets/icon/share_green.png"),
+                                                                  Padding(
+                                                                    padding: EdgeInsets.only(
+                                                                        left: Get.width *
+                                                                            0.03),
+                                                                    child: Text(
+                                                                      "Share",
+                                                                      style: poppinsRegular
+                                                                          .copyWith(
+                                                                        fontSize:
+                                                                            Get.width *
+                                                                                0.04,
+                                                                        color: ThemeManager()
+                                                                            .getThemeGreenColor,
                                                                       ),
                                                                     ),
                                                                   ),
-
-                                                                  ///---------------Share------------------
-                                                                  Padding(
-                                                                    padding: EdgeInsets.only(
-                                                                        top: Get.height * 0.015),
-                                                                    child: GestureDetector(
-                                                                        onTap: () async {
-                                                                        // Uint8List?bytes = await dukhadImageController.capture();
-                                                                        // final tempDir = await getTemporaryDirectory();
-                                                                        // File file = await File('${tempDir.path}/image.png').create();
-                                                                        // file.writeAsBytesSync(bytes!);
-                                                                        // List<String>shareImage = [];
-                                                                        // shareImage.add(file.path);
-                                                                        // Share.shareFiles(shareImage);
-                                                                          RenderRepaintBoundary boundary = _globalDukhadKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                                                          ui.Image image = await boundary.toImage();
-                                                                          ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-                                                                          Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                                                          final tempDir = await getTemporaryDirectory();
-                                                                          File file = await File('${tempDir.path}/image.png').create();
-                                                                          file.writeAsBytesSync(pngBytes);
-                                                                          List<String>shareImage = [];
-                                                                          shareImage.add(file.path);
-                                                                          Share.shareFiles(shareImage);
-                                                                        },
-                                                                        child: Row(
-                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                    children: [
-                                                                      Image.asset(
-                                                                          "assets/icon/share_green.png"),
-                                                                      Padding(
-                                                                        padding:
-                                                                            EdgeInsets.only(left: Get.width * 0.03),
-                                                                        child:
-                                                                            Text(
-                                                                          "Share",
-                                                                          style: poppinsRegular.copyWith(
-                                                                            fontSize: Get.width * 0.04,
-                                                                            color: ThemeManager().getThemeGreenColor,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                        ),
-                                                                      ),
-                                                                  ),
                                                                 ],
                                                               ),
-                                                            );
-                                                          },
-                                                        )),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
+                                                )),
                                     ),
                                   ],
                                 ),
@@ -2010,7 +2229,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       calendarFormat: CalendarFormat.week,
                                       calendarStyle: CalendarStyle(
                                         selectedDecoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
+                                          // shape: BoxShape.rectangle,
                                           color:
                                               ThemeManager().getThemeGreenColor,
                                           borderRadius:
@@ -2028,7 +2247,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ),
                                         isTodayHighlighted: false,
                                         defaultDecoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
+                                          // shape: BoxShape.rectangle,
                                           color: ThemeManager().getWhiteColor,
                                           borderRadius:
                                               BorderRadius.circular(7),
@@ -2064,16 +2283,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         print("selectedDay ==> ${selectedDay}");
                                         selectedPunyaTithiDay = selectedDay;
                                         focusedDay = selectedPunyaTithiDay;
-                                        String temp = focusedDay.toString().substring(5,10);
+                                        String temp = focusedDay
+                                            .toString()
+                                            .substring(5, 10);
                                         print("selectedDay ==> ${temp}");
 
                                         setState(() {});
                                         var punayTithiBody = {
-                                          "date":temp,
+                                          "date": temp,
                                           "city_id": _preferences.getCityId()
                                         };
                                         // newsController.getNews(punayTithiBody);
-                                        punyaTithiController.getPunyatithi(punayTithiBody);
+                                        punyaTithiController
+                                            .getPunyatithi(punayTithiBody);
                                       },
                                       availableGestures:
                                           AvailableGestures.horizontalSwipe,
@@ -2110,319 +2332,404 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       daysOfWeekVisible: false,
                                       sixWeekMonthsEnforced: true,
                                     ),
-                                    Obx(() => Expanded(
-                                      child: ListView.separated(
-                                                    itemCount:
-                                                        punyaTithiController
-                                                            .punyaTithiList
-                                                            .length,
-                                                    shrinkWrap: true,
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal:
-                                                                Get.width *
-                                                                    0.05,
-                                                            vertical:
-                                                                Get.height *
-                                                                    0.015),
-                                                    separatorBuilder:
-                                                        (context, index) {
-                                                      return SizedBox(
-                                                        height:
-                                                            Get.height * 0.02,
-                                                      );
-                                                    },
-                                                    itemBuilder:
-                                                        (context, index) {
-                                                          GlobalKey _globalPunyaTithiKey =  GlobalKey();
-                                                          int yearTithi = countYear(punyaTithiController.punyaTithiList[index].dateOfExpire.toString());
-                                                          // int yearTithi = 12;
-                                                          String extention = "";
-                                                          String temp = yearTithi.toString().substring(yearTithi.toString().length-1);
-                                                          if(temp == "1"){
-                                                            extention = "st";
-                                                            print("extention ==> $temp");
-                                                          }
-                                                          if(temp == "2") {
-                                                            extention = "rd";
-                                                            print("extention ==> $temp");
-                                                          }
-                                                          if(temp != "1" && temp != "2"){
-                                                            extention = "th";
-                                                          }
-                                                          return Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: ThemeManager()
-                                                              .getWhiteColor,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(10),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              color: ThemeManager()
-                                                                  .getBlackColor
-                                                                  .withOpacity(
-                                                                      0.075),
-                                                              spreadRadius: 4,
-                                                              blurRadius: 5,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                          horizontal:
-                                                              Get.width * 0.025,
-                                                          vertical:
-                                                              Get.width * 0.025,
-                                                        ),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
+                                    Obx(
+                                      () => Expanded(
+                                        child: ListView.separated(
+                                          itemCount: punyaTithiController
+                                              .punyaTithiList.length,
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: Get.width * 0.05,
+                                              vertical: Get.height * 0.015),
+                                          separatorBuilder: (context, index) {
+                                            return SizedBox(
+                                              height: Get.height * 0.02,
+                                            );
+                                          },
+                                          itemBuilder: (context, index) {
+                                            GlobalKey _globalPunyaTithiKey =
+                                                GlobalKey();
+                                            int yearTithi = countYear(
+                                                punyaTithiController
+                                                    .punyaTithiList[index]
+                                                    .dateOfExpire
+                                                    .toString());
+                                            // int yearTithi = 12;
+                                            String extention = "";
+                                            String temp = yearTithi
+                                                .toString()
+                                                .substring(yearTithi
+                                                        .toString()
+                                                        .length -
+                                                    1);
+                                            if (temp == "1") {
+                                              extention = "st";
+                                              print("extention ==> $temp");
+                                            }
+                                            if (temp == "2") {
+                                              extention = "rd";
+                                              print("extention ==> $temp");
+                                            }
+                                            if (temp == "3") {
+                                              extention = "rd";
+                                            }
+                                            if (temp != "1" &&
+                                                temp != "2" &&
+                                                temp != "3") {
+                                              extention = "th";
+                                            }
+                                            return Container(
+                                              decoration: BoxDecoration(
+                                                color: ThemeManager()
+                                                    .getWhiteColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: ThemeManager()
+                                                        .getBlackColor
+                                                        .withOpacity(0.075),
+                                                    spreadRadius: 4,
+                                                    blurRadius: 5,
+                                                  ),
+                                                ],
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: Get.width * 0.025,
+                                                vertical: Get.width * 0.025,
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            7),
+                                                    child: RepaintBoundary(
+                                                      key: _globalPunyaTithiKey,
+                                                      child: Container(
+                                                        color: Colors.white,
+                                                        child: Stack(
+                                                          alignment:
+                                                              Alignment.center,
                                                           children: [
-                                                            ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          7),
-                                                              child: RepaintBoundary(
-                                                                key: _globalPunyaTithiKey,
-                                                                child: Container(color: Colors.white,
-                                                                  child: Stack(
-                                                                    alignment:
-                                                                        Alignment
-                                                                            .center,
-                                                                    children: [
-                                                                      Image.asset(
-                                                                        ImageConstant.punyaTithiImage,
-                                                                        fit: BoxFit
-                                                                            .fill,
-                                                                      ),
-                                                                      Positioned(
-                                                                        top: Get.width *
-                                                                            0.125,
-                                                                        left: Get
-                                                                                .width *
-                                                                            0.315,
-                                                                        child:
-                                                                            Container(
-                                                                          decoration: BoxDecoration(
-                                                                              borderRadius: BorderRadius.circular(
-                                                                                  55),
-                                                                              ),
-                                                                          height:
-                                                                              78,
-                                                                          width:
-                                                                              78,
-                                                                          child:
-                                                                              Padding(
-                                                                            padding:
-                                                                                const EdgeInsets.all(2.0),
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius:
-                                                                                  BorderRadius.circular(45),
-                                                                              child:
-                                                                                  Image.network(
-                                                                                mainUrl + punyaTithiController.punyaTithiList[index].avtar,
-                                                                                height: 90,
-                                                                                width: 90,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      yearTithi != 0 ? Positioned(bottom: Get.height * .214,left: Get.width * .188,child: Text(extention,style: GoogleFonts.poppins(
-                                                                        fontSize: 8,
-                                                                        color:
-                                                                        ThemeManager().brownColors,
-                                                                        fontWeight:
-                                                                        FontWeight.w400,
-                                                                      ),)) : Container(),
-                                                                      Positioned(bottom: Get.height * .19,left: Get.width * .15,child: Padding(
-                                                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                                                        child: Text(yearTithi != 0 ?
-                                                                        "($yearTithi    पुण्यतिथि पर भावपूर्ण श्रद्धांजलि)" : "",
-                                                                          textAlign:
-                                                                          TextAlign.center,
-                                                                          style:
-                                                                          GoogleFonts.poppins(
-                                                                            fontSize: 12,
-                                                                            color:
-                                                                            ThemeManager().brownColors,
-                                                                            fontWeight:
-                                                                            FontWeight.w400,
-                                                                          ),
-                                                                        ),
-                                                                      ),),
-                                                                      SizedBox(height: Get.height * .253,
-                                                                        child: Column(
-                                                                            children: [
-                                                                        SizedBox(
-                                                                          height: Get.height * .12,
-                                                                        ),
-                                                                        Text(
+                                                            Image.asset(
+                                                              ImageConstant
+                                                                  .punyaTithiImage,
+                                                              fit: BoxFit.fill,
+                                                            ),
+                                                            Positioned(
+                                                              top: Get.width *
+                                                                  0.125,
+                                                              left: Get.width *
+                                                                  0.315,
+                                                              child: Container(
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              55),
+                                                                ),
+                                                                height: 78,
+                                                                width: 78,
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                              .all(
+                                                                          2.0),
+                                                                  child:
+                                                                      ClipRRect(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            45),
+                                                                    child: Image
+                                                                        .network(
+                                                                      mainUrl +
                                                                           punyaTithiController
                                                                               .punyaTithiList[index]
-                                                                              .name,
-                                                                          textAlign:
-                                                                              TextAlign.center,
-                                                                          style:
-                                                                              GoogleFonts.poppins(
-                                                                            fontSize:
-                                                                                15,
-                                                                            color:
-                                                                                ThemeManager().brownColors,
-                                                                            fontWeight:
-                                                                                FontWeight.w700,
-                                                                          ),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: const EdgeInsets.only(top: 5.0),
-                                                                          child: Text(
-                                                                            punyaTithiController
-                                                                                .punyaTithiList[index]
-                                                                                .about,
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style: GoogleFonts.poppins(
-                                                                                fontSize: 9,
-                                                                                color: ThemeManager().brownColors),
-                                                                          ),
-                                                                        ),
-                                                                         SizedBox(
-                                                                          height: Get.height * .02,
-                                                                        ),
-                                                                            ],
-                                                                          ),
-                                                                      ),
-                                                                    ],
+                                                                              .avtar,
+                                                                      height:
+                                                                          90,
+                                                                      width: 90,
+                                                                      fit: BoxFit
+                                                                          .cover,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
                                                             ),
-
-                                                            ///---------------Share------------------
-
-                                                            Padding(
-                                                              padding: EdgeInsets.only(
-                                                                      top: Get.height * 0.015),
-                                                              child: Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  ///---------------Call------------------
-
-                                                                  GestureDetector(
-                                                                    onTap: () async {
-                                                                      String
-                                                                          telephoneNumber =
-                                                                          punyaTithiController
-                                                                              .punyaTithiList[index]
-                                                                              .phoneNo;
-                                                                      String
-                                                                          telephoneUrl =
-                                                                          "tel:$telephoneNumber";
-                                                                      if (await launchUrl(
-                                                                          Uri.parse(
-                                                                              telephoneUrl))) {
-                                                                        await launchUrl(
-                                                                            Uri.parse(telephoneUrl));
-                                                                      } else {
-                                                                        throw "Error occured trying to call that number.";
-                                                                      }
-                                                                    },
-                                                                    child: Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .start,
-                                                                      children: [
-                                                                        Image.asset(
-                                                                            "assets/icon/call.png"),
-                                                                        Padding(
-                                                                          padding:
-                                                                              EdgeInsets.only(left: Get.width * 0.03),
-                                                                          child:
-                                                                              Text(
-                                                                            "Call",
-                                                                            style:
-                                                                                poppinsRegular.copyWith(
-                                                                              fontSize: Get.width * 0.04,
-                                                                              color: ThemeManager().getThemeGreenColor,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-
-                                                                  Container(
+                                                            yearTithi != 0
+                                                                ? Positioned(
+                                                                    bottom:
+                                                                        Get.height *
+                                                                            .214,
+                                                                    left:
+                                                                        Get.width *
+                                                                            .188,
+                                                                    child: Text(
+                                                                      extention,
+                                                                      style: GoogleFonts
+                                                                          .poppins(
+                                                                        fontSize:
+                                                                            8,
+                                                                        color: ThemeManager()
+                                                                            .brownColors,
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                      ),
+                                                                    ))
+                                                                : Container(),
+                                                            Positioned(
+                                                              bottom:
+                                                                  Get.height *
+                                                                      .19,
+                                                              left: Get.width *
+                                                                  .15,
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        bottom:
+                                                                            8.0),
+                                                                child: Text(
+                                                                  yearTithi != 0
+                                                                      ? "($yearTithi    पुण्यतिथि पर भावपूर्ण श्रद्धांजलि)"
+                                                                      : "",
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: GoogleFonts
+                                                                      .poppins(
+                                                                    fontSize:
+                                                                        12,
                                                                     color: ThemeManager()
-                                                                        .getLightGreyColor,
-                                                                    height: 20,
-                                                                    width: 1,
-                                                                    margin: EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            Get.width *
-                                                                                0.15),
+                                                                        .brownColors,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400,
                                                                   ),
-
-                                                                  ///---------------Share------------------
-
-                                                                  GestureDetector(
-                                                                    onTap: () async {
-                                                                      // Uint8List?bytes = await punyaTithiImageController.capture();
-                                                                      // final tempDir = await getTemporaryDirectory();
-                                                                      // File file = await File('${tempDir.path}/image.png').create();
-                                                                      // file.writeAsBytesSync(bytes!);
-                                                                      // List<String>shareImage = [];
-                                                                      // shareImage.add(file.path);
-                                                                      // Share.shareFiles(shareImage);
-                                                                      RenderRepaintBoundary boundary = _globalPunyaTithiKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                                                      ui.Image image = await boundary.toImage();
-                                                                      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-                                                                      Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                                                      final tempDir = await getTemporaryDirectory();
-                                                                      File file = await File('${tempDir.path}/image.png').create();
-                                                                      file.writeAsBytesSync(pngBytes);
-                                                                      List<String>shareImage = [];
-                                                                      shareImage.add(file.path);
-                                                                      Share.shareFiles(shareImage);
-                                                                    },
-                                                                    child: Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .start,
-                                                                      children: [
-                                                                        Image.asset(
-                                                                            "assets/icon/share_green.png"),
-                                                                        Padding(
-                                                                          padding:
-                                                                              EdgeInsets.only(left: Get.width * 0.03),
-                                                                          child:
-                                                                              Text(
-                                                                            "Share",
-                                                                            style:
-                                                                                poppinsRegular.copyWith(
-                                                                              fontSize: Get.width * 0.04,
-                                                                              color: ThemeManager().getThemeGreenColor,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              height:
+                                                                  Get.height *
+                                                                      .253,
+                                                              child: Column(
+                                                                children: [
+                                                                  SizedBox(
+                                                                    height:
+                                                                        Get.height *
+                                                                            .12,
+                                                                  ),
+                                                                  Text(
+                                                                    punyaTithiController
+                                                                        .punyaTithiList[
+                                                                            index]
+                                                                        .name,
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style: GoogleFonts
+                                                                        .poppins(
+                                                                      fontSize:
+                                                                          15,
+                                                                      color: ThemeManager()
+                                                                          .brownColors,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w700,
                                                                     ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                            .only(
+                                                                        top:
+                                                                            5.0),
+                                                                    child: Text(
+                                                                      punyaTithiController
+                                                                          .punyaTithiList[
+                                                                              index]
+                                                                          .about,
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: GoogleFonts.poppins(
+                                                                          fontSize:
+                                                                              9,
+                                                                          color:
+                                                                              ThemeManager().brownColors),
+                                                                    ),
+                                                                  ),
+                                                                  SizedBox(
+                                                                    height:
+                                                                        Get.height *
+                                                                            .02,
                                                                   ),
                                                                 ],
                                                               ),
                                                             ),
                                                           ],
                                                         ),
-                                                      );
-                                                    },
+                                                      ),
+                                                    ),
                                                   ),
+
+                                                  ///---------------Share------------------
+
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                        top:
+                                                            Get.height * 0.015),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        ///---------------Call------------------
+
+                                                        GestureDetector(
+                                                          onTap: () async {
+                                                            String
+                                                                telephoneNumber =
+                                                                punyaTithiController
+                                                                    .punyaTithiList[
+                                                                        index]
+                                                                    .phoneNo;
+                                                            String
+                                                                telephoneUrl =
+                                                                "tel:$telephoneNumber";
+                                                            if (await launchUrl(
+                                                                Uri.parse(
+                                                                    telephoneUrl))) {
+                                                              await launchUrl(
+                                                                  Uri.parse(
+                                                                      telephoneUrl));
+                                                            } else {
+                                                              throw "Error occured trying to call that number.";
+                                                            }
+                                                          },
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Image.asset(
+                                                                  "assets/icon/call.png"),
+                                                              Padding(
+                                                                padding: EdgeInsets.only(
+                                                                    left: Get
+                                                                            .width *
+                                                                        0.03),
+                                                                child: Text(
+                                                                  "Call",
+                                                                  style: poppinsRegular
+                                                                      .copyWith(
+                                                                    fontSize:
+                                                                        Get.width *
+                                                                            0.04,
+                                                                    color: ThemeManager()
+                                                                        .getThemeGreenColor,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+
+                                                        Container(
+                                                          color: ThemeManager()
+                                                              .getLightGreyColor,
+                                                          height: 20,
+                                                          width: 1,
+                                                          margin: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      Get.width *
+                                                                          0.15),
+                                                        ),
+
+                                                        ///---------------Share------------------
+
+                                                        GestureDetector(
+                                                          onTap: () async {
+                                                            // Uint8List?bytes = await punyaTithiImageController.capture();
+                                                            // final tempDir = await getTemporaryDirectory();
+                                                            // File file = await File('${tempDir.path}/image.png').create();
+                                                            // file.writeAsBytesSync(bytes!);
+                                                            // List<String>shareImage = [];
+                                                            // shareImage.add(file.path);
+                                                            // Share.shareFiles(shareImage);
+                                                            RenderRepaintBoundary
+                                                                boundary =
+                                                                _globalPunyaTithiKey
+                                                                        .currentContext!
+                                                                        .findRenderObject()
+                                                                    as RenderRepaintBoundary;
+                                                            ui.Image image =
+                                                                await boundary
+                                                                    .toImage(
+                                                                        pixelRatio:
+                                                                            4);
+                                                            ByteData? byteData =
+                                                                await image.toByteData(
+                                                                    format: ui
+                                                                        .ImageByteFormat
+                                                                        .png);
+                                                            Uint8List pngBytes =
+                                                                byteData!.buffer
+                                                                    .asUint8List();
+                                                            final tempDir =
+                                                                await getTemporaryDirectory();
+                                                            File file = await File(
+                                                                    '${tempDir.path}/image.png')
+                                                                .create();
+                                                            file.writeAsBytesSync(
+                                                                pngBytes);
+                                                            List<String>
+                                                                shareImage = [];
+                                                            shareImage
+                                                                .add(file.path);
+                                                            Share.shareFiles(
+                                                                shareImage);
+                                                          },
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Image.asset(
+                                                                  "assets/icon/share_green.png"),
+                                                              Padding(
+                                                                padding: EdgeInsets.only(
+                                                                    left: Get
+                                                                            .width *
+                                                                        0.03),
+                                                                child: Text(
+                                                                  "Share",
+                                                                  style: poppinsRegular
+                                                                      .copyWith(
+                                                                    fontSize:
+                                                                        Get.width *
+                                                                            0.04,
+                                                                    color: ThemeManager()
+                                                                        .getThemeGreenColor,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ],

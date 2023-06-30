@@ -571,6 +571,40 @@ class APIServices {
     }
   }
 
+
+  Future uploadPhoto ({String? pickedImage}) async {
+
+    try {
+      Map<String, String> headers = {
+        "Authorization": "Bearer ${_preferences.getToken()}"
+      };
+      final multipartRequest = http.MultipartRequest('POST',
+          Uri.parse("https://jymnew.spitel.com/api/upload-image"));
+      multipartRequest.headers.addAll(headers);
+      http.MultipartFile multipartFileIdFront =
+      await http.MultipartFile.fromPath('avtar', pickedImage!);
+
+      multipartRequest.files.add(multipartFileIdFront);
+
+      var response = await multipartRequest.send();
+      if (kDebugMode) {
+        print("response $response");
+      }
+      var responded = await http.Response.fromStream(response);
+      final responseData = json.decode(responded.body);
+      if (kDebugMode) {
+        print("responseData $responseData");
+      }
+      return responseData;
+    } catch (e) {
+      print(e);
+    }
+    // const url = 'https://jymnew.spitel.com/api/post/';
+    // final request = http.MultipartRequest('POST', Uri.parse(url));
+    // final file = await http.MultipartFile.fromPath('avtar', pickedImage);
+    // request.files.add(file);
+    // final response = await request.send();
+  }
   ///-------------Insert User Data-------------------
 
 
@@ -634,14 +668,7 @@ class APIServices {
       );
       print("Response================>${response.body}");
       if (response.statusCode == 200) {
-        // var result = json.decode(response.body);
-        // var data = result["count"];
-        // print("post like count ==> $data");
-        // return data;
       }
-    // } /*catch (e) {
-    //   print(e);
-    // }*/
   }
 
   ///-----------------post like count
@@ -654,6 +681,7 @@ class APIServices {
         var result = json.decode(response.body);
         // var data = PostLike.fromJson(result);
         String data = result["count"].toString();
+        // return PostLike.fromJson(result);
         return data;
       }
     } catch (e) {
@@ -666,15 +694,14 @@ class APIServices {
     final uri = Uri.http("jymnew.spitel.com", "/api/get-customer");
     try {
       var response = await http.get(uri);
-      print("costomer data ==> ${response.statusCode}");
+      print("response.body ==> ${response.body}");
+      print("response.code ==> ${response.statusCode}");
 
       if (response.statusCode == 200) {
         var result = json.decode(response.body);
-        print("costomer data ==> ${result}");
-
-        var data = result["data"].map((e) => GetMember.fromJson(e));
-        // var data = result["data"].map((e) => UtilitiesModel.fromJson(e));
-
+        var data = result["data"].map((e) => MemberDetails.fromJson(e));
+        print("result ==> ${result}");
+        print("data ==> ${data}");
         return data;
       }
     } catch (e) {
